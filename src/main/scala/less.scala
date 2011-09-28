@@ -37,7 +37,7 @@ object Plugin extends sbt.Plugin {
       )
     }
 
-  private def compiled(under: File) = (under ** "*.less").get
+  private def compiled(under: File) = (under ** "*.css").get
 
   private def compileChanged(sources: File, target: File, compiler: Compiler, charset: Charset, out: Logger) =
     (for (less <- (sources ** "*.less").get;
