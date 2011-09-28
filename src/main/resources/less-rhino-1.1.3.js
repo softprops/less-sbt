@@ -2422,14 +2422,14 @@ function writeFile(filename, content) {
     out.close();
 }
 
-// removed original cmdline argument handling function
+// removed origilnal cmdline argument handling function
 // with this function for convenit scoped access to the
 // less.Parser function
-function compile(code, fn) {
+function compile(code, min) {
   var css = null;
   new less.Parser().parse(code, function (e, root) {
     if(e) { throw e; }
-    css = root.toCSS()
+    css = root.toCSS({ compress: min || false })
   });
   return css;
 }

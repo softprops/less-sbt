@@ -6,10 +6,11 @@ object Plugin extends sbt.Plugin {
   import Project.Initialize._
   import java.nio.charset.Charset
   import java.io.File
-  import LessKeys.{less => lesskey, charset, filter, excludeFilter}
+  import LessKeys.{less => lesskey, charset, filter, excludeFilter, mini}
 
   object LessKeys {
     lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources")
+    lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources")
     lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8")
     lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources from default directories.")
     lazy val excludeFilter = SettingKey[FileFilter]("exclude-filter", "Filter for excluding files from default directories.")
@@ -63,9 +64,9 @@ object Plugin extends sbt.Plugin {
     }
 
   private def lessCompilerTask =
-    (streams, sourceDirectory in lesskey, resourceManaged in lesskey, charset in lesskey) map {
-      (out, sourceDir, targetDir, charset) =>
-        compileChanged(sourceDir, targetDir, compiler, charset, out.log)
+    (streams, sourceDirectory in lesskey, resourceManaged in lesskey, charset in lesskey, mini in lesskey) map {
+      (out, sourceDir, targetDir, charset, mini) =>
+        compileChanged(sourceDir, targetDir, compiler(mini), charset, out.log)
     }
 
   // move defaultExcludes to excludeFilter in unmanagedSources later
@@ -75,7 +76,7 @@ object Plugin extends sbt.Plugin {
          sourceDir.descendentsExcept(filt, excl).get
     }
 
-  private def compiler: Compiler = less.Compiler
+  private def compiler(min: Boolean): Compiler = less.Compiler(min)
 
   def lessSettingsIn(c: Configuration): Seq[Setting[_]] =
     inConfig(c)(lessSettings0 ++ Seq(
@@ -92,6 +93,7 @@ object Plugin extends sbt.Plugin {
 
   def lessSettings0: Seq[Setting[_]] = Seq(
     charset in lesskey := Charset.forName("utf-8"),
+    mini in lesskey := false,
     filter in lesskey := "*.less",
     // change to (excludeFilter in Global) when dropping support of sbt 0.10.*
     excludeFilter in lesskey := (".*"  - ".") || HiddenFileFilter,

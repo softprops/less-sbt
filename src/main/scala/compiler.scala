@@ -5,7 +5,7 @@ import org.mozilla.javascript._
 import java.io.InputStreamReader
 import java.nio.charset.Charset
 
-object Compiler {
+case class Compiler(mini: Boolean = false) {
    val utf8 = Charset.forName("utf-8")
 
   def compile(code: String): Either[String, String] = withContext { ctx =>
@@ -18,7 +18,7 @@ object Compiler {
    val less = scope.get("compile", scope).asInstanceOf[Callable]
 
     try {
-      Right(less.call(ctx, scope, scope, Array(code)).toString)
+      Right(less.call(ctx, scope, scope, Array(code, mini.asInstanceOf[AnyRef])).toString)
     } catch {
       case e : JavaScriptException =>
         e.getValue match {
