@@ -2422,6 +2422,9 @@ function writeFile(filename, content) {
     out.close();
 }
 
+// removed original cmdline argument handling function
+// with this function for convenit scoped access to the
+// less.Parser function
 function compile(code, fn) {
   var css = null;
   new less.Parser().parse(code, function (e, root) {
