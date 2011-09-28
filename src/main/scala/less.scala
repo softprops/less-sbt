@@ -11,11 +11,11 @@ object Plugin extends sbt.Plugin {
   object LessKeys {
     lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources")
     lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8")
-    lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting coffee sources from default directories.")
+    lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources from default directories.")
     lazy val excludeFilter = SettingKey[FileFilter]("exclude-filter", "Filter for excluding files from default directories.")
   }
 
-type Compiler = { def compile(src: String): Either[String, String] }
+  type Compiler = { def compile(src: String): Either[String, String] }
 
   private def css(sources: File, less: File, targetDir: File) =
     Some(new File(targetDir, IO.relativize(sources, less).get.replace(".less",".css")))
@@ -37,7 +37,7 @@ type Compiler = { def compile(src: String): Either[String, String] }
       )
     }
 
-  private def compiled(under: File) = (under ** "*.js").get
+  private def compiled(under: File) = (under ** "*.less").get
 
   private def compileChanged(sources: File, target: File, compiler: Compiler, charset: Charset, out: Logger) =
     (for (less <- (sources ** "*.less").get;
