@@ -1,16 +1,10 @@
 # first release
 
-A nice complement to [cofeescripted-sbt](https://github.com/softprops/coffeescripted-sbt#readme) for front end developemnt.
+A nice complement to [coffeescripted-sbt][cs] for front end development.
 
-- Compiles [less](http://lesscss.org/) to css
-
-- optinal Built-in minification
-
-- watchable compilation
-
-    ~ less
-
-- __no__ affillation with the [lessis](http://lessis.me/) domain
+- Compiles [less][less] to css
+- Optinal Built-in minification
+- Watchable file change support `~ less`
 
 ## settings
 
@@ -22,7 +16,7 @@ A nice complement to [cofeescripted-sbt](https://github.com/softprops/coffeescri
     unmanaged-sources(for less) # lists resolved less sources
     clean(for less) # deletes compiled css
     config:source-directory(for less) # where less files will be resolved from
-    config:resource-managed(for less) # where compiled css well be copied to
+    config:resource-managed(for less) # where compiled css will be copied to
     
 ## install it
 
@@ -42,6 +36,10 @@ To add it to other configurations, use
 
     seq(lessSettingsIn(SomeOtherConfig):_*)
 
-For more information set the project [readme][rm]
+For more information see the project [readme][rm]
 
+[less][less] has __no__ affillation with the [lessis](http://lessis.me/) domain
+
+[cs]: https://github.com/softprops/coffeescripted-sbt#readme
 [rm]: https://github.com/softprops/less-sbt#readme
+[less]: http://lesscss.org/
