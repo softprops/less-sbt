@@ -2,6 +2,8 @@
 
 type [less](http://lesscss.org/) css in your sbt projects
 
+![LESS](http://lesscss.org/images/logo.png) ![Scala](https://github.com/downloads/softprops/coffeescripted-sbt/scala_logo.png)
+
 a friendly companion for [coffeescripted-sbt](https://github.com/softprops/coffeescripted-sbt#readme)
 
 ## settings
