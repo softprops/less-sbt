@@ -3,7 +3,7 @@
 A nice complement to [coffeescripted-sbt][cs] for front end development.
 
 - Compiles [less][less] to css
-- Optinal Built-in minification
+- Optional built-in minification
 - Watchable file change support `~ less`
 
 ## settings
