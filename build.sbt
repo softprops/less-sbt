@@ -12,4 +12,6 @@ version <<= sbtVersion(v =>
 
 libraryDependencies += "rhino" % "js" % "1.7R2"
 
+publishTo :=  Some(Resolver.file("lessis repo", new java.io.File("/var/www/repo")))
+
 seq(scriptedSettings:_*)
