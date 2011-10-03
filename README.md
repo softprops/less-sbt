@@ -43,6 +43,10 @@ Put your `.less` files under `src/main/less` and find the compiled css under `pa
 To overide a setting like `mini`, add something like following to your build file after including the less settings.
 
     (LessKeys.mini in (Compile, LessKeys.less)) := true
+
+To change the default location of less compiled css files, add the following to your build file
+
+    (resourceManaged in (Compile, LessKeys.less)) <<= (crossTarget in Compile)(_ / "your_preference" / "css")
    
 All available keys are exposed through the `LessKeys` module.
 
