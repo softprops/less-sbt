@@ -25,8 +25,9 @@ object Plugin extends sbt.Plugin {
     try {
       val (less, css) = pair
       out.debug("Compiling %s" format less)
-      compiler.compile(io.Source.fromFile(less)(io.Codec(charset)).mkString).fold({ err =>
-        error(err)
+      compiler.compile(io.Source.fromFile(less)(
+        io.Codec(charset)).mkString).fold({ err =>
+        sys.error(err)
       }, { compiled =>
         IO.write(css, compiled)
         out.debug("Wrote to file %s" format css)
@@ -40,19 +41,21 @@ object Plugin extends sbt.Plugin {
 
   private def compiled(under: File) = (under ** "*.css").get
 
-  private def compileChanged(sources: File, target: File, compiler: Compiler, charset: Charset, out: Logger) =
-    (for (less <- (sources ** "*.less").get;
+  private def compileChanged(sources: File, target: File, incl: FileFilter,
+                             excl: FileFilter, compiler: Compiler, charset: Charset,
+                             log: Logger) =
+    (for (less <- sources.descendentsExcept(incl, excl).get;
           css <- css(sources, less, target)
       if (less newerThan css)) yield {
         (less, css)
       }) match {
         case Nil =>
-          out.info("No less files to compile")
+          log.info("No less files to compile")
           compiled(target)
         case xs =>
-          out.info("Compiling %d less files to %s" format(xs.size, target))
-          xs map compile(compiler, charset, out)
-          out.debug("Compiled %s less files" format xs.size)
+          log.info("Compiling %d less files to %s" format(xs.size, target))
+          xs map compile(compiler, charset, log)
+          log.debug("Compiled %s less files" format xs.size)
           compiled(target)
       }
 
@@ -64,9 +67,10 @@ object Plugin extends sbt.Plugin {
     }
 
   private def lessCompilerTask =
-    (streams, sourceDirectory in lesskey, resourceManaged in lesskey, charset in lesskey, mini in lesskey) map {
-      (out, sourceDir, targetDir, charset, mini) =>
-        compileChanged(sourceDir, targetDir, compiler(mini), charset, out.log)
+    (streams, sourceDirectory in lesskey, resourceManaged in lesskey,
+     filter in lesskey, excludeFilter in lesskey, charset in lesskey, mini in lesskey) map {
+      (out, sourceDir, targetDir, incl, excl, charset, mini) =>
+        compileChanged(sourceDir, targetDir, incl, excl, compiler(mini), charset, out.log)
     }
 
   // move defaultExcludes to excludeFilter in unmanagedSources later
@@ -82,10 +86,10 @@ object Plugin extends sbt.Plugin {
     inConfig(c)(lessSettings0 ++ Seq(
       sourceDirectory in lesskey <<= (sourceDirectory in c) { _ / "less" },
       resourceManaged in lesskey <<= (resourceManaged in c) { _ / "css" },
-      resourceGenerators in c <+= lesskey.identity
+      resourceGenerators in c <+= lesskey
     )) ++ Seq(
-      cleanFiles <+= (resourceManaged in lesskey in c).identity,
-      watchSources <++= (unmanagedSources in lesskey in c).identity
+      cleanFiles <+= (resourceManaged in lesskey in c),
+      watchSources <++= (unmanagedSources in lesskey in c)
     )
 
   def lessSettings: Seq[Setting[_]] =
