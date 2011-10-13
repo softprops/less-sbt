@@ -24,7 +24,7 @@ case class Compiler(mini: Boolean = false) {
         e.getValue match {
           case v: Scriptable =>
             Left(ScriptableObject.getProperty(v, "message").toString)
-          case v => error("unknown exception value type %s" format v)
+          case v => sys.error("unknown exception value type %s" format v)
         }
     }
   }
