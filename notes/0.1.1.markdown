@@ -1,0 +1,4 @@
+- fixed [#2][#2] - actually use the provided filter vs compiling all `.less` sources
+- resolve scala 2.9 and sbt 0.11 warnings
+
+[#2]: https://github.com/softprops/less-sbt/issues/2
