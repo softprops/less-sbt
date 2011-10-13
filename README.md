@@ -24,7 +24,7 @@ In your plugin definition add
 
     resolvers += "less is" at "http://repo.lessis.me"
     
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.0")
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.1")
     
 And in your build file add
 
