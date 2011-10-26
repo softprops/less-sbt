@@ -56,4 +56,8 @@ All available keys are exposed through the `LessKeys` module.
 
 Have an issue? [Tell me about it](https://github.com/softprops/less-sbt/issues)
 
+## contributions
+
+I'll take them where they make sense. Please use a feature branch in your fork, i.e. git checkout -b my-cool-feature, and if possible, write a [scripted test](http://eed3si9n.com/testing-sbt-plugins) for it.
+
 Doug Tangren (softprops) 2011
