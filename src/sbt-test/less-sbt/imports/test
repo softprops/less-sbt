@@ -1,4 +1,6 @@
 # imported .less files should work
 > less
 $ exists target/scala-2.9.1/resource_managed/main/css/a.css
-$ exists target/scala-2.9.1/resource_managed/main/css/b.css
+-$ exists target/scala-2.9.1/resource_managed/main/css/b.css
+# note: less expands shorthand hex, i.e. #eee -> #eeeeee
+> contents target/scala-2.9.1/resource_managed/main/css/a.css fixtures/a.css
