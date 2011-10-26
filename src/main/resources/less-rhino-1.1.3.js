@@ -2398,16 +2398,27 @@ require('less/tree').jsify = function (obj) {
         return obj.toCSS(false);
     }
 };
+
+// reference to name passed in as argument in compile function
 var name;
+
+// the use of readFile below will result in an undefined error
+// because this script is not being run via rhino's shell
+// the work around is to capture an instance of rhinos
+// shell and reference readFile as a member of that instance
+// http://blog.echo-flow.com/2010/09/29/scxml-js-build-adventures/
+var rshell = org.mozilla.javascript.tools.shell.Main;
+rshell.exec(["-e","var a='STRING';"]);
+var rshellGlobal = rshell.global;
 
 function loadStyleSheet(sheet, callback, reload, remaining) {
     var sheetName = name.slice(0, name.lastIndexOf('/') + 1) + sheet.href;
-    var input = readFile(sheetName);
+    var input = rshellGlobal.readFile(sheetName);
     var parser = new less.Parser();
     parser.parse(input, function (e, root) {
         if (e) {
             print("Error: " + e);
-            quit(1);
+            rshellGlobal.quit(1);
         }
         callback(root, sheet, { local: false, lastModified: 0, remaining: remaining });
     });
@@ -2423,9 +2434,10 @@ function writeFile(filename, content) {
 }
 
 // removed origilnal cmdline argument handling function
-// with this function for convenit scoped access to the
+// with this function for convenient scoped access to the
 // less.Parser function
-function compile(code, min) {
+function compile(scriptName, code, min) {
+  name = scriptName;
   var css = null;
   new less.Parser().parse(code, function (e, root) {
     if(e) { throw e; }

@@ -16,7 +16,8 @@ object Plugin extends sbt.Plugin {
     lazy val excludeFilter = SettingKey[FileFilter]("exclude-filter", "Filter for excluding files from default directories.")
   }
 
-  type Compiler = { def compile(src: String): Either[String, String] }
+  /** name is required as a reference point for importing relative dependencies within less */
+  type Compiler = { def compile(name: String, src: String): Either[String, String] }
 
   private def css(sources: File, less: File, targetDir: File) =
     Some(new File(targetDir, IO.relativize(sources, less).get.replace(".less",".css")))
@@ -25,7 +26,7 @@ object Plugin extends sbt.Plugin {
     try {
       val (less, css) = pair
       out.debug("Compiling %s" format less)
-      compiler.compile(io.Source.fromFile(less)(
+      compiler.compile(less.getPath, io.Source.fromFile(less)(
         io.Codec(charset)).mkString).fold({ err =>
         sys.error(err)
       }, { compiled =>

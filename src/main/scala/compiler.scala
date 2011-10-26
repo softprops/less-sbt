@@ -8,7 +8,7 @@ import java.nio.charset.Charset
 case class Compiler(mini: Boolean = false) {
    val utf8 = Charset.forName("utf-8")
 
-  def compile(code: String): Either[String, String] = withContext { ctx =>
+  def compile(name: String, code: String): Either[String, String] = withContext { ctx =>
     val scope = ctx.initStandardObjects()
     ctx.evaluateReader(scope,
       new InputStreamReader(getClass().getResourceAsStream("/less-rhino-1.1.3.js"), utf8),
@@ -18,7 +18,7 @@ case class Compiler(mini: Boolean = false) {
    val less = scope.get("compile", scope).asInstanceOf[Callable]
 
     try {
-      Right(less.call(ctx, scope, scope, Array(code, mini.asInstanceOf[AnyRef])).toString)
+      Right(less.call(ctx, scope, scope, Array(name, code, mini.asInstanceOf[AnyRef])).toString)
     } catch {
       case e : JavaScriptException =>
         e.getValue match {
