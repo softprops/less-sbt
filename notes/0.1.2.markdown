@@ -1,0 +1,1 @@
+- fixed [#3](https://github.com/softprops/less-sbt/issues/3) - less-sbt now supports the less [@import](http://lesscss.org/#-importing) directive. See the [scripted test](https://github.com/softprops/less-sbt/tree/master/src/sbt-test/less-sbt/imports) for an example.
