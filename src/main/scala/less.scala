@@ -51,7 +51,7 @@ object Plugin extends sbt.Plugin {
         (less, css)
       }) match {
         case Nil =>
-          log.info("No less files to compile")
+          log.debug("No less files to compile")
           compiled(target)
         case xs =>
           log.info("Compiling %d less files to %s" format(xs.size, target))
