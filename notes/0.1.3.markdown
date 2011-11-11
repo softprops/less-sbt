@@ -1,4 +1,4 @@
-- fixes [#3 No less files to compile spam](https://github.com/softprops/less-sbt/issues/5)
+- fixes [#5 No less files to compile spam](https://github.com/softprops/less-sbt/issues/5)
 
 Previously, the `less` task would print an info message if no sources needed to be compiled. This was bumped down to a
 debug message
