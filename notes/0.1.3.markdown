@@ -5,5 +5,5 @@ debug message
 
 - fixes [#4 compile task not recompiling less files](https://github.com/softprops/less-sbt/issues/4)
 
-After getting multiple requests, the default `compile` task will depend on `less` when mixing in `lessSettings`. This 
+After receiving multiple requests, the default `compile` task will depend on `less` when mixing in `lessSettings`. This 
 should help people who develop using `~compile` 
