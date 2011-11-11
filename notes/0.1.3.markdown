@@ -1,0 +1,9 @@
+- fixes [#3 No less files to compile spam](https://github.com/softprops/less-sbt/issues/5)
+
+Previously, the `less` task would print an info message if no sources needed to be compiled. This was bumped down to a
+debug message
+
+- fixes [#4 compile task not recompiling less files](https://github.com/softprops/less-sbt/issues/4)
+
+After getting multiple requests, the default `compile` task will depend on `less` when mixing in `lessSettings`. This 
+should help people who develop using `~compile` 
