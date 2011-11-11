@@ -9,9 +9,9 @@ object Plugin extends sbt.Plugin {
   import LessKeys.{less => lesskey, charset, filter, excludeFilter, mini}
 
   object LessKeys {
-    lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources")
-    lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources")
-    lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8")
+    lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources.")
+    lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources. Defaults to false.")
+    lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8.")
     lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources from default directories.")
     lazy val excludeFilter = SettingKey[FileFilter]("exclude-filter", "Filter for excluding files from default directories.")
   }
@@ -22,7 +22,7 @@ object Plugin extends sbt.Plugin {
   private def css(sources: File, less: File, targetDir: File) =
     Some(new File(targetDir, IO.relativize(sources, less).get.replace(".less",".css")))
 
-  private def compile(compiler: Compiler, charset: Charset, out: Logger)(pair: (File, File)) =
+  private def compileSources(compiler: Compiler, charset: Charset, out: Logger)(pair: (File, File)) =
     try {
       val (less, css) = pair
       out.debug("Compiling %s" format less)
@@ -51,12 +51,12 @@ object Plugin extends sbt.Plugin {
         (less, css)
       }) match {
         case Nil =>
-          log.debug("No less files to compile")
+          log.debug("No less sources to compile")
           compiled(target)
         case xs =>
-          log.info("Compiling %d less files to %s" format(xs.size, target))
-          xs map compile(compiler, charset, log)
-          log.debug("Compiled %s less files" format xs.size)
+          log.info("Compiling %d less sources to %s" format(xs.size, target))
+          xs map compileSources(compiler, charset, log)
+          log.debug("Compiled %s less sources" format xs.size)
           compiled(target)
       }
 
@@ -87,10 +87,13 @@ object Plugin extends sbt.Plugin {
     inConfig(c)(lessSettings0 ++ Seq(
       sourceDirectory in lesskey <<= (sourceDirectory in c) { _ / "less" },
       resourceManaged in lesskey <<= (resourceManaged in c) { _ / "css" },
-      resourceGenerators in c <+= lesskey
+      cleanFiles in lesskey <<= (resourceManaged in lesskey)(_ :: Nil),
+      watchSources in lesskey <<= (unmanagedSources in lesskey)
     )) ++ Seq(
-      cleanFiles <+= (resourceManaged in lesskey in c),
-      watchSources <++= (unmanagedSources in lesskey in c)
+      cleanFiles <++= (cleanFiles in lesskey in c),
+      watchSources <++= (watchSources in lesskey in c),
+      resourceGenerators in c <+= lesskey in c,
+      compile in c <<= (compile in c).dependsOn(lesskey in c)
     )
 
   def lessSettings: Seq[Setting[_]] =
