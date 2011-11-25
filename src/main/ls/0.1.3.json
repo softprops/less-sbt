@@ -1,0 +1,22 @@
+
+{
+ "organization":"me.lessis",
+ "name":"less-sbt",
+ "version":"0.1.3",
+ "description":"Sbt plugin for compiling Less Css sources",
+ "site":"",
+ "tags":["sbt","less"],
+ "docs":"",
+ "licenses": [{
+   "name": "MIT",
+   "url": "https://github.com/softprops/less-sbt/blob/0.1.3/LICENSE"
+  }],
+ "resolvers": ["http://repo.lessis.me"],
+ "dependencies": [{
+   "organization":"rhino",
+   "name": "js",
+   "version": "1.7R2"
+  }],
+ "scalas": ["2.9.1"],
+ "sbt": true
+}
