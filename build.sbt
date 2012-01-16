@@ -11,15 +11,15 @@ version <<= sbtVersion(v =>
 
 libraryDependencies += "rhino" % "js" % "1.7R2"
 
-publishTo :=  Some(Resolver.file("lessis repo", new java.io.File("/var/www/repo")))
+publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/")
+
+credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 
 seq(scriptedSettings:_*)
 
 seq(lsSettings:_*)
 
 (LsKeys.tags in LsKeys.lsync) := Seq("sbt", "less")
-
-(externalResolvers in LsKeys.lsync) := Seq("less is" at "http://repo.lessis.me")
 
 (description in LsKeys.lsync) :=
   "Sbt plugin for compiling Less CSS sources"
