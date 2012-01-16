@@ -22,9 +22,8 @@ a friendly companion for [coffeescripted-sbt](https://github.com/softprops/coffe
 
 In your plugin definition add
 
-    resolvers += "less is" at "http://repo.lessis.me"
     
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.3")
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.4")
     
 And in your build file add
 
