@@ -48,17 +48,22 @@ abstract class Compiler(src: String) extends ShellEmulation {
   val utf8 = Charset.forName("utf-8")
 
 
-  def compile(name: String, code: String, mini: Boolean = false): Either[String, String] = withContext { ctx =>
+  def compile(name: String, mini: Boolean = false)(f: String => Unit) = withContext { ctx =>
     try {
       val less = scope.get("compile", scope).asInstanceOf[Callable]
-      Right(less.call(ctx, scope, scope, Array(name, code, mini.asInstanceOf[AnyRef])).toString)
+      f(less.call(ctx, scope, scope, Array(name, mini.asInstanceOf[AnyRef])).toString)
     } catch {
-      case e : JavaScriptException =>
-        e.getValue match {
-          case v: Scriptable =>
-            Left(ScriptableObject.getProperty(v, "message").toString)
-          case v => sys.error("unknown exception value type %s" format v)
+      case e : JavaScriptException => e.getValue match {
+        case v: Scriptable => {
+          val fileName = ScriptableObject.getProperty(v, "filename").toString
+          val message = ScriptableObject.getProperty(v, "message").toString
+          sys.error("error occured while compiling %s: %s" format (fileName, message))
         }
+        case v => sys.error("error occured while compiling %s: unknown js exception value type %s" format (name, v))
+      }
+      case e => sys.error(
+          "error occured while compiling %s: unexpected exception %s: %s" format (name, e.getClass, e.getMessage)
+      )
     }
   }
 
