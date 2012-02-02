@@ -2436,6 +2436,8 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
     var sheetName = name.slice(0, name.lastIndexOf('/') + 1) + sheet.href;
     var input = rshellGlobal.readFile(sheetName);
     var parser = new less.Parser();
+    var savedName = name;
+    name = sheetName;
     parser.parse(input, function (e, root) {
         if (e) {
             print("Error: " + e);
@@ -2444,6 +2446,7 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
         callback(root, sheet, { local: false, lastModified: 0, remaining: remaining });
     });
 
+    name = savedName;
     // callback({}, sheet, { local: true, remaining: remaining });
 }
 
