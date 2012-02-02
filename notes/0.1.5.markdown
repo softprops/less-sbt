@@ -1,0 +1,8 @@
+* actually _use_ the `less-rhino-1.1.5.js` compiler
+
+* fix bug introduced by the newer less compiler [#8][i8]
+
+* speeder less compilation by evaluation the less compiler only once per sbt session [#10][i10]
+
+[i8]: https://github.com/softprops/less-sbt/issues/8
+[i10]: https://github.com/softprops/less-sbt/issues/10
