@@ -2436,14 +2436,21 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
     var sheetName = name.slice(0, name.lastIndexOf('/') + 1) + sheet.href;
     var input = rshellGlobal.readFile(sheetName);
     var parser = new less.Parser();
-    parser.parse(input, function (e, root) {
-        if (e) {
-            print("Error: " + e);
-            rshellGlobal.quit(1);
-        }
-        callback(root, sheet, { local: false, lastModified: 0, remaining: remaining });
-    });
+    var savedName = name;
+    name = sheetName;
+    try {
+      parser.parse(input, function (e, root) {
+          if (e) { throw e; }
+          callback(root, sheet, { local: false, lastModified: 0, remaining: remaining });
+      });
+    } catch (e) {
+      throw {
+        message: e.message || "Unknown error",
+        filename: name
+      };
+    }
 
+    name = savedName;
     // callback({}, sheet, { local: true, remaining: remaining });
 }
 
@@ -2457,12 +2464,13 @@ function writeFile(filename, content) {
 // removed origilnal cmdline argument handling function
 // with this function for convenient scoped access to the
 // less.Parser function
-function compile(scriptName, code, min) {
+function compile(scriptName, min) {
   name = scriptName;
   var css = null;
-  new less.Parser().parse(code, function (e, root) {
-    if(e) { throw e; }
-    css = root.toCSS({ compress: min || false })
+
+  loadStyleSheet({ href: scriptName.split("/").pop() }, function(root) {
+    css = root.toCSS({ compress: min || false });
   });
+
   return css;
 }

@@ -17,28 +17,19 @@ object Plugin extends sbt.Plugin {
   }
 
   /** name is required as a reference point for importing relative dependencies within less */
-  type Compiler = { def compile(name: String, src: String, mini: Boolean): Either[String, String] }
+  type Compiler = { def compile(name: String, mini: Boolean)(f: String => Unit): Unit }
 
   private def css(sources: File, less: File, targetDir: File) =
     Some(new File(targetDir, IO.relativize(sources, less).get.replace(".less",".css")))
 
-  private def compileSources(compiler: Compiler, mini: Boolean, charset: Charset, out: Logger)(pair: (File, File)) =
-    try {
-      val (less, css) = pair
-      out.debug("Compiling %s" format less)
-      compiler.compile(less.getPath, io.Source.fromFile(less)(
-        io.Codec(charset)).mkString, mini).fold({ err =>
-        sys.error(err)
-      }, { compiled =>
-        IO.write(css, compiled)
-        out.debug("Wrote to file %s" format css)
-        css
-      })
-    } catch { case e: Exception =>
-      throw new RuntimeException(
-        "error occured while compiling %s: %s" format(pair._1, e.getMessage), e
-      )
+  private def compileSources(compiler: Compiler, mini: Boolean, charset: Charset, out: Logger)(pair: (File, File)) = {
+    val (less, css) = pair
+    out.debug("Compiling %s" format less)
+    compiler.compile(less.getPath, mini) { compiled =>
+      IO.write(css, compiled)
+      out.debug("Wrote to file %s" format css)
     }
+  }
 
   private def compiled(under: File) = (under ** "*.css").get
 
