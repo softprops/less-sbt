@@ -1,18 +1,58 @@
 package less
 
-import org.mozilla.javascript.{Callable, Context, Function, FunctionObject, JavaScriptException, NativeObject, Scriptable}
-import org.mozilla.javascript._
+import org.mozilla.javascript.{
+  Callable, Context, Function, FunctionObject, JavaScriptException,
+  NativeObject, Scriptable, ScriptableObject }
+import org.mozilla.javascript.tools.shell.{ Environment, Global }
 import java.io.InputStreamReader
 import java.nio.charset.Charset
 
-case class Compiler(mini: Boolean = false) {
-   val utf8 = Charset.forName("utf-8")
+
+object ShellEmulation {
+  /** common functions the rhino shell defines */
+  val ShellFunctions = Array(
+    "doctest",
+    "gc",
+    "load",
+    "loadClass",
+    "print",
+    "quit",
+    "readFile",
+    "readUrl",
+    "runCommand",
+    "seal",
+    "sync",
+    "toint32",
+    "version")
+}
+
+/** Most `rhino friendly` js libraries make liberal use
+ *  if non emca script properties and functions that the
+ *  rhino shell env defines. Unfortunately we are not
+ *  evaluating these sources in a rhino shell.
+ *  instead of crying me a river, provide an interface
+ *  that enables emulation of the shell env */
+trait ShellEmulation {
+   import ShellEmulation._
+   def emulated(s: ScriptableObject) = {
+     // define rhino shell functions
+     s.defineFunctionProperties(ShellFunctions, classOf[Global], ScriptableObject.DONTENUM)
+     // make rhino `detectable` - http://github.com/ringo/ringojs/issues/#issue/88
+     Environment.defineClass(s)
+     s.defineProperty("environment", new Environment(s), ScriptableObject.DONTENUM)
+     s
+   }
+}
+
+case class Compiler(mini: Boolean = false) extends ShellEmulation {
+  val utf8 = Charset.forName("utf-8")
+  val src = "less-rhino-1.1.5.js"
 
   def compile(name: String, code: String): Either[String, String] = withContext { ctx =>
-    val scope = ctx.initStandardObjects()
+    val scope = emulated(ctx.initStandardObjects())
     ctx.evaluateReader(scope,
-      new InputStreamReader(getClass().getResourceAsStream("/less-rhino-1.1.5.js"), utf8),
-     "less-rhino-1.1.5.js", 1, null
+      new InputStreamReader(getClass().getResourceAsStream("/%s" format src), utf8),
+     src, 1, null
     )
 
    val less = scope.get("compile", scope).asInstanceOf[Callable]
