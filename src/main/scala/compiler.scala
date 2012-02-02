@@ -44,20 +44,13 @@ trait ShellEmulation {
    }
 }
 
-case class Compiler(mini: Boolean = false) extends ShellEmulation {
+abstract class Compiler(src: String) extends ShellEmulation {
   val utf8 = Charset.forName("utf-8")
-  val src = "less-rhino-1.1.5.js"
 
-  def compile(name: String, code: String): Either[String, String] = withContext { ctx =>
-    val scope = emulated(ctx.initStandardObjects())
-    ctx.evaluateReader(scope,
-      new InputStreamReader(getClass().getResourceAsStream("/%s" format src), utf8),
-     src, 1, null
-    )
 
-   val less = scope.get("compile", scope).asInstanceOf[Callable]
-
+  def compile(name: String, code: String, mini: Boolean = false): Either[String, String] = withContext { ctx =>
     try {
+      val less = scope.get("compile", scope).asInstanceOf[Callable]
       Right(less.call(ctx, scope, scope, Array(name, code, mini.asInstanceOf[AnyRef])).toString)
     } catch {
       case e : JavaScriptException =>
@@ -67,6 +60,18 @@ case class Compiler(mini: Boolean = false) extends ShellEmulation {
           case v => sys.error("unknown exception value type %s" format v)
         }
     }
+  }
+
+  override def toString = "%s (%s)" format(super.toString, src)
+
+  private lazy val scope = withContext { ctx =>
+    val scope = emulated(ctx.initStandardObjects())
+    ctx.evaluateReader(
+      scope,
+      new InputStreamReader(getClass().getResourceAsStream("/%s" format src), utf8),
+      src, 1, null
+    )
+    scope
   }
 
   private def withContext[T](f: Context => T): T = {
@@ -79,3 +84,5 @@ case class Compiler(mini: Boolean = false) extends ShellEmulation {
     }
   }
 }
+
+object DefaultCompiler extends Compiler("less-rhino-1.1.5.js")

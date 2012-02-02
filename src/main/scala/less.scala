@@ -17,17 +17,17 @@ object Plugin extends sbt.Plugin {
   }
 
   /** name is required as a reference point for importing relative dependencies within less */
-  type Compiler = { def compile(name: String, src: String): Either[String, String] }
+  type Compiler = { def compile(name: String, src: String, mini: Boolean): Either[String, String] }
 
   private def css(sources: File, less: File, targetDir: File) =
     Some(new File(targetDir, IO.relativize(sources, less).get.replace(".less",".css")))
 
-  private def compileSources(compiler: Compiler, charset: Charset, out: Logger)(pair: (File, File)) =
+  private def compileSources(compiler: Compiler, mini: Boolean, charset: Charset, out: Logger)(pair: (File, File)) =
     try {
       val (less, css) = pair
       out.debug("Compiling %s" format less)
       compiler.compile(less.getPath, io.Source.fromFile(less)(
-        io.Codec(charset)).mkString).fold({ err =>
+        io.Codec(charset)).mkString, mini).fold({ err =>
         sys.error(err)
       }, { compiled =>
         IO.write(css, compiled)
@@ -43,7 +43,7 @@ object Plugin extends sbt.Plugin {
   private def compiled(under: File) = (under ** "*.css").get
 
   private def compileChanged(sources: File, target: File, incl: FileFilter,
-                             excl: FileFilter, compiler: Compiler, charset: Charset,
+                             excl: FileFilter, compiler: Compiler, mini: Boolean, charset: Charset,
                              log: Logger) =
     (for (less <- sources.descendentsExcept(incl, excl).get;
           css <- css(sources, less, target)
@@ -55,7 +55,7 @@ object Plugin extends sbt.Plugin {
           compiled(target)
         case xs =>
           log.info("Compiling %d less sources to %s" format(xs.size, target))
-          xs map compileSources(compiler, charset, log)
+          xs map compileSources(compiler, mini, charset, log)
           log.debug("Compiled %s less sources" format xs.size)
           compiled(target)
       }
@@ -71,7 +71,7 @@ object Plugin extends sbt.Plugin {
     (streams, sourceDirectory in lesskey, resourceManaged in lesskey,
      filter in lesskey, excludeFilter in lesskey, charset in lesskey, mini in lesskey) map {
       (out, sourceDir, targetDir, incl, excl, charset, mini) =>
-        compileChanged(sourceDir, targetDir, incl, excl, compiler(mini), charset, out.log)
+        compileChanged(sourceDir, targetDir, incl, excl, compiler, mini, charset, out.log)
     }
 
   // move defaultExcludes to excludeFilter in unmanagedSources later
@@ -81,7 +81,7 @@ object Plugin extends sbt.Plugin {
          sourceDir.descendentsExcept(filt, excl).get
     }
 
-  private def compiler(min: Boolean): Compiler = less.Compiler(min)
+  private def compiler: Compiler = less.DefaultCompiler
 
   def lessSettingsIn(c: Configuration): Seq[Setting[_]] =
     inConfig(c)(lessSettings0 ++ Seq(
