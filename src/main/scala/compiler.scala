@@ -11,8 +11,8 @@ case class Compiler(mini: Boolean = false) {
   def compile(name: String, code: String): Either[String, String] = withContext { ctx =>
     val scope = ctx.initStandardObjects()
     ctx.evaluateReader(scope,
-      new InputStreamReader(getClass().getResourceAsStream("/less-rhino-1.1.3.js"), utf8),
-     "less-rhino-1.1.3.js", 1, null
+      new InputStreamReader(getClass().getResourceAsStream("/less-rhino-1.1.5.js"), utf8),
+     "less-rhino-1.1.5.js", 1, null
     )
 
    val less = scope.get("compile", scope).asInstanceOf[Callable]
