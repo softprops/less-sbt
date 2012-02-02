@@ -1,0 +1,5 @@
+# changing an importee should trigger and importer's compilation
+> less
+$ touch src/main/less/dependency.less
+# touching dependency.less should have triggered the recompilation of main.less
+$ newer target/scala-2.9.1/resource_managed/main/css/main.css  src/main/less/dependency.less

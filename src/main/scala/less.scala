@@ -6,23 +6,28 @@ object Plugin extends sbt.Plugin {
   import Project.Initialize._
   import java.nio.charset.Charset
   import java.io.File
-  import LessKeys.{less => lesskey, charset, filter, excludeFilter, mini}
+  import LessKeys.{less => lesskey, charset, filter, importFilter, excludeFilter, mini}
 
   object LessKeys {
     lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources.")
     lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources. Defaults to false.")
     lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8.")
-    lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources from default directories.")
+    lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources to compile. When importFilter is None, any stale files attributed to this filter will be compiled.")
+     lazy val importFilter = SettingKey[Option[FileFilter]]("import-filter", "Filter for selecting less sources that represent targets of less file imports. When stale, these will trigger the compilation of all files attributed to the filter setting.")
     lazy val excludeFilter = SettingKey[FileFilter]("exclude-filter", "Filter for excluding files from default directories.")
   }
 
   /** name is required as a reference point for importing relative dependencies within less */
   type Compiler = { def compile(name: String, src: String, mini: Boolean): Either[String, String] }
 
+  type Pair = (File, File)
+
   private def css(sources: File, less: File, targetDir: File) =
     Some(new File(targetDir, IO.relativize(sources, less).get.replace(".less",".css")))
 
-  private def compileSources(compiler: Compiler, mini: Boolean, charset: Charset, out: Logger)(pair: (File, File)) =
+  private def compileSources(
+    compiler: Compiler, mini: Boolean,
+    charset: Charset, out: Logger)(pair: Pair) =
     try {
       val (less, css) = pair
       out.debug("Compiling %s" format less)
@@ -42,14 +47,35 @@ object Plugin extends sbt.Plugin {
 
   private def compiled(under: File) = (under ** "*.css").get
 
-  private def compileChanged(sources: File, target: File, incl: FileFilter,
-                             excl: FileFilter, compiler: Compiler, mini: Boolean, charset: Charset,
-                             log: Logger) =
-    (for (less <- sources.descendentsExcept(incl, excl).get;
-          css <- css(sources, less, target)
-      if (less newerThan css)) yield {
-        (less, css)
-      }) match {
+  private def changesIn(
+    sources: File, target: File,
+    incl: FileFilter, excl: FileFilter) =
+    collect(sources, target, incl, excl, {
+      (less, css) => less newerThan css
+    })_
+
+  private def every(
+    sources: File, target: File,
+    incl: FileFilter, excl: FileFilter) =
+    collect(sources, target, incl, excl, { (_,_) => true })_
+
+  private def collect(
+    sources: File, target: File, incl: FileFilter, excl: FileFilter,
+    pred: (File, File) => Boolean)(f: Seq[Pair] => Seq[File]) =
+      f(for (less <- sources.descendentsExcept(incl, excl).get;
+         css <- css(sources, less, target) if (pred(less, css))) yield (less, css))
+
+  private def lessCleanTask =
+    (streams, resourceManaged in lesskey) map {
+      (out, target) =>
+        out.log.info("Cleaning generated CSS under " + target)
+        IO.delete(target)
+    }
+
+  private def compiling(
+    target: File, compiler: Compiler,
+    mini: Boolean, charset: Charset, log: Logger)(pairs: Seq[Pair]) =
+      pairs match {
         case Nil =>
           log.debug("No less sources to compile")
           compiled(target)
@@ -60,23 +86,29 @@ object Plugin extends sbt.Plugin {
           compiled(target)
       }
 
-  private def lessCleanTask =
-    (streams, resourceManaged in lesskey) map {
-      (out, target) =>
-        out.log.info("Cleaning generated CSS under " + target)
-        IO.delete(target)
-    }
-
-  private def lessCompilerTask =
+  private def lessCompilerTask: sbt.Project.Initialize[sbt.Task[Seq[java.io.File]]] =
     (streams, sourceDirectory in lesskey, resourceManaged in lesskey,
-     filter in lesskey, excludeFilter in lesskey, charset in lesskey, mini in lesskey) map {
-      (out, sourceDir, targetDir, incl, excl, charset, mini) =>
-        compileChanged(sourceDir, targetDir, incl, excl, compiler, mini, charset, out.log)
+     filter in lesskey, importFilter in lesskey, excludeFilter in lesskey,
+     charset in lesskey, mini in lesskey) map {
+      (out, sourceDir, targetDir, incl, imports, excl, charset, mini) =>
+        imports match {
+          case Some(imps) =>
+            changesIn(sourceDir, targetDir, imps, excl) { chgs =>
+              if(!chgs.isEmpty) every(sourceDir, targetDir, incl, excl) (compiling(
+                targetDir, compiler, mini, charset, out.log
+              )_) else Nil
+            }
+          case _ =>
+            changesIn(sourceDir, targetDir, incl, excl) (compiling(
+              targetDir, compiler, mini, charset, out.log
+            )_)
+        }
     }
 
   // move defaultExcludes to excludeFilter in unmanagedSources later
   private def lessSourcesTask =
-    (sourceDirectory in lesskey, filter in lesskey, excludeFilter in lesskey) map {
+    (sourceDirectory in lesskey, filter in lesskey,
+     excludeFilter in lesskey) map {
       (sourceDir, filt, excl) =>
          sourceDir.descendentsExcept(filt, excl).get
     }
@@ -103,6 +135,7 @@ object Plugin extends sbt.Plugin {
     charset in lesskey := Charset.forName("utf-8"),
     mini in lesskey := false,
     filter in lesskey := "*.less",
+    importFilter in lesskey := None,
     // change to (excludeFilter in Global) when dropping support of sbt 0.10.*
     excludeFilter in lesskey := (".*"  - ".") || HiddenFileFilter,
     unmanagedSources in lesskey <<= lessSourcesTask,
