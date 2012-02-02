@@ -1,1 +1,1 @@
-addSbtPlugin("me.lessis" % "less-sbt" % "0.1.4-SNAPSHOT")
+addSbtPlugin("me.lessis" % "less-sbt" % "0.1.5-SNAPSHOT")
