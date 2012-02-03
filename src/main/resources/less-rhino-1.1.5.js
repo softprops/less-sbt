@@ -2457,7 +2457,7 @@ function writeFile(filename, content) {
     out.close();
 }
 
-// removed origilnal cmdline argument handling function
+// removed original cmdline argument handling function
 // with this function for convenient scoped access to the
 // less.Parser function
 function compile(scriptName, code, min) {
