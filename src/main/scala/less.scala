@@ -6,14 +6,14 @@ object Plugin extends sbt.Plugin {
   import Project.Initialize._
   import java.nio.charset.Charset
   import java.io.File
-  import LessKeys.{less => lesskey, charset, filter, importFilter, excludeFilter, mini}
+  import LessKeys.{less => lesskey, charset, filter, libFilter, excludeFilter, mini}
 
   object LessKeys {
     lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources.")
     lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources. Defaults to false.")
     lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8.")
     lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources to compile. When importFilter is None, any stale files attributed to this filter will be compiled.")
-     lazy val importFilter = SettingKey[Option[FileFilter]]("import-filter", "Filter for selecting less sources that represent targets of less file imports. When stale, these will trigger the compilation of all files attributed to the filter setting.")
+     lazy val libFilter = SettingKey[Option[FileFilter]]("lib-filter", "Filter for selecting less sources that represent targets of less file imports. When stale, these will trigger the compilation of all files attributed to the filter setting.")
     lazy val excludeFilter = SettingKey[FileFilter]("exclude-filter", "Filter for excluding files from default directories.")
   }
 
@@ -88,12 +88,12 @@ object Plugin extends sbt.Plugin {
 
   private def lessCompilerTask: sbt.Project.Initialize[sbt.Task[Seq[java.io.File]]] =
     (streams, sourceDirectory in lesskey, resourceManaged in lesskey,
-     filter in lesskey, importFilter in lesskey, excludeFilter in lesskey,
+     filter in lesskey, libFilter in lesskey, excludeFilter in lesskey,
      charset in lesskey, mini in lesskey) map {
-      (out, sourceDir, targetDir, incl, imports, excl, charset, mini) =>
-        imports match {
-          case Some(imps) =>
-            changesIn(sourceDir, targetDir, imps, excl) { chgs =>
+      (out, sourceDir, targetDir, incl, libs, excl, charset, mini) =>
+        libs match {
+          case Some(imports) =>
+            changesIn(sourceDir, targetDir, imports, excl) { chgs =>
               if(!chgs.isEmpty) every(sourceDir, targetDir, incl, excl) (compiling(
                 targetDir, compiler, mini, charset, out.log
               )_) else Nil
@@ -135,7 +135,7 @@ object Plugin extends sbt.Plugin {
     charset in lesskey := Charset.forName("utf-8"),
     mini in lesskey := false,
     filter in lesskey := "*.less",
-    importFilter in lesskey := None,
+    libFilter in lesskey := None,
     // change to (excludeFilter in Global) when dropping support of sbt 0.10.*
     excludeFilter in lesskey := (".*"  - ".") || HiddenFileFilter,
     unmanagedSources in lesskey <<= lessSourcesTask,

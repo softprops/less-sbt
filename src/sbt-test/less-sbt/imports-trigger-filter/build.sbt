@@ -5,4 +5,4 @@ seq(lessSettings:_*)
 
 // imports and things that will trigger the compilation
 // of main.less
-(LessKeys.importFilter in (Compile, LessKeys.less)) := Some("*.less")
+(LessKeys.libFilter in (Compile, LessKeys.less)) := Some("*.less")
