@@ -1,3 +1,8 @@
+resolvers ++= Seq(
+  "less is" at "http://repo.lessis.me",
+  "coda" at "http://repo.codahale.com"
+)
+
 libraryDependencies <+= sbtVersion(v=>
   "org.scala-tools.sbt" %% "scripted-plugin" % v
 )
