@@ -22,7 +22,7 @@ a friendly companion for [coffeescripted-sbt](https://github.com/softprops/coffe
 
 In your plugin definition add
     
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.4")
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.5")
     
 And in your build file add
 
