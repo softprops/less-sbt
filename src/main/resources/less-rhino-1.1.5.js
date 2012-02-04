@@ -2423,25 +2423,16 @@ require('./tree').jsify = function (obj) {
 // reference to the name in as argument in compile function
 var name;
 
-// the use of readFile below will result in an undefined error
-// because this script is not being run via rhino's shell
-// the work around is to capture an instance of rhinos
-// shell and reference readFile as a member of that instance
-// http://blog.echo-flow.com/2010/09/29/scxml-js-build-adventures/
-var rshell = org.mozilla.javascript.tools.shell.Main;
-rshell.exec(["-e","var a='STRING';"]);
-var rshellGlobal = rshell.global;
-
 function loadStyleSheet(sheet, callback, reload, remaining) {
     var sheetName = name.slice(0, name.lastIndexOf('/') + 1) + sheet.href;
-    var input = rshellGlobal.readFile(sheetName);
+    var input = readFile(sheetName);
     var parser = new less.Parser();
     var savedName = name;
     name = sheetName;
     parser.parse(input, function (e, root) {
         if (e) {
             print("Error: " + e);
-            rshellGlobal.quit(1);
+            quit(1);
         }
         callback(root, sheet, { local: false, lastModified: 0, remaining: remaining });
     });
