@@ -2421,14 +2421,18 @@ require('./tree').jsify = function (obj) {
 };
 
 // reference to the name in as argument in compile function
-var name;
+var rootPath;
+var curPath;
+var imports;
 
 function loadStyleSheet(sheet, callback, reload, remaining) {
-    var sheetName = name.slice(0, name.lastIndexOf('/') + 1) + sheet.href;
+    var sheetName = curPath + '/' + sheet.href;
     var input = readFile(sheetName);
     var parser = new less.Parser();
-    var savedName = name;
-    name = sheetName;
+    var prevPath = curPath;
+    curPath = sheetName.slice(0, sheetName.lastIndexOf('/'));
+    imports.push(sheetName.slice(rootPath.length + 1));
+
     parser.parse(input, function (e, root) {
         if (e) {
             print("Error: " + e);
@@ -2437,7 +2441,7 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
         callback(root, sheet, { local: false, lastModified: 0, remaining: remaining });
     });
 
-    name = savedName;
+    curPath = prevPath;
     // callback({}, sheet, { local: true, remaining: remaining });
 }
 
@@ -2452,11 +2456,12 @@ function writeFile(filename, content) {
 // with this function for convenient scoped access to the
 // less.Parser function
 function compile(scriptName, code, min) {
-  name = scriptName;
+  curPath = rootPath = scriptName.slice(0, scriptName.lastIndexOf('/'));
+  imports = new Array();
   var css = null;
   new less.Parser().parse(code, function (e, root) {
     if(e) { throw e; }
     css = root.toCSS({ compress: min || false })
   });
-  return css;
+  return new CompilationResult(css, imports);
 }
