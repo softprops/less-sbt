@@ -1,0 +1,4 @@
+* fixed issue with nested relative issues [#7][i7] { [kastigar][kastigar] }
+
+[i7]: https://github.com/softprops/less-sbt/issues/7
+[kastigar]: https://github.com/kastigar

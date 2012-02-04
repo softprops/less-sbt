@@ -40,13 +40,29 @@ Put your `.less` files under `src/main/less` and find the compiled css under `pa
 
 ## customize it
 
-To overide a setting like `mini`, add something like following to your build file after including the less settings.
+### using less's built-in css minification
+
+To override the default `mini` setting, add following to your build definition after including the less settings.
 
     (LessKeys.mini in (Compile, LessKeys.less)) := true
 
-To change the default location of less compiled css files, add the following to your build file
+### changing target css destination
+
+To change the default location of compiled css files, add the following to your build definition
 
     (resourceManaged in (Compile, LessKeys.less)) <<= (crossTarget in Compile)(_ / "your_preference" / "css")
+
+### working with [@import](http://lesscss.org/#-importing)s
+
+Some less projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which imports multiple `.less` files using the [@import](http://lesscss.org/#-importing) feature of `less`. To achieve the same kind of compilation with less-sbt, set the `filter` defined by less-sbt to the target of compilation.
+
+    (LessKeys.filter in (Compile, LessKeys.less)) := "your_main.less"
+
+This will build a single `your_main.css` file which includes all of the @imported style definitions.
+
+To see an example of compiling [Bootstrap][bootstrap] itself, check out the [scripted test](https://github.com/softprops/less-sbt/tree/master/src/sbt-test/less-sbt/bootstrap).
+
+Note that using this style of design in combination is sbt's continuous execution operator, `~`, will _not_ trigger less if the primary less file's dependencies change. This is a [known issue](https://github.com/softprops/less-sbt/issues/6).
    
 All available keys are exposed through the `LessKeys` module.
 
@@ -59,3 +75,5 @@ Have an issue? [Tell me about it](https://github.com/softprops/less-sbt/issues)
 I'll take them where they make sense. Please use a feature branch in your fork, i.e. git checkout -b my-cool-feature, and if possible, write a [scripted test](http://eed3si9n.com/testing-sbt-plugins) for it.
 
 Doug Tangren (softprops) 2011
+
+[bootstrap]: http://twitter.github.com/bootstrap/

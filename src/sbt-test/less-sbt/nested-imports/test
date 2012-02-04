@@ -1,0 +1,5 @@
+# imported sub.less should be imported from imports/
+> less
+$ exists target/scala-2.9.1/resource_managed/main/css/main.css
+# note: less expands shorthand hex, i.e. #eee -> #eeeeee
+> contents target/scala-2.9.1/resource_managed/main/css/main.css fixtures/main.css
