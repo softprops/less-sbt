@@ -52,7 +52,7 @@ To change the default location of less compiled css files, add the following to 
 
     (resourceManaged in (Compile, LessKeys.less)) <<= (crossTarget in Compile)(_ / "your_preference" / "css")
 
-### Working with [@import](http://lesscss.org/#-importing)s
+### working with [@import](http://lesscss.org/#-importing)s
 
 Some less projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which imports multiple `.less` files using the [@import](http://lesscss.org/#-importing) feature of `less`. To acheive the same kind of compilation with less-sbt, make the set the `filter` defined by less-sbt to the target of compilation
 
