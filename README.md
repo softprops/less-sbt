@@ -42,19 +42,19 @@ Put your `.less` files under `src/main/less` and find the compiled css under `pa
 
 ### using less's built-in css minification
 
-To overide a setting like `mini`, add something like following to your build file after including the less settings.
+To override the default `mini` setting, add following to your build definition after including the less settings.
 
     (LessKeys.mini in (Compile, LessKeys.less)) := true
 
 ### changing target css destination
 
-To change the default location of less compiled css files, add the following to your build file
+To change the default location of compiled css files, add the following to your build definition
 
     (resourceManaged in (Compile, LessKeys.less)) <<= (crossTarget in Compile)(_ / "your_preference" / "css")
 
 ### working with [@import](http://lesscss.org/#-importing)s
 
-Some less projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which imports multiple `.less` files using the [@import](http://lesscss.org/#-importing) feature of `less`. To acheive the same kind of compilation with less-sbt, make the set the `filter` defined by less-sbt to the target of compilation
+Some less projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which import multiple `.less` files using the [@import](http://lesscss.org/#-importing) feature of `less`. To acheive the same kind of compilation with less-sbt, make the set the `filter` defined by less-sbt to the target of compilation
 
    (LessKeys.filter in (Compile, LessKeys.less)) := "your_main.less"
 
