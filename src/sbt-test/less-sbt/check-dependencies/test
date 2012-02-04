@@ -1,0 +1,12 @@
+# `imports` files should be generated
+> less
+$ exists target/less-1.1.5/imports/main.less
+$ exists target/less-1.1.5/imports/alone.less
+$ exists target/less-1.1.5/imports/nested/main.less
+> contents target/less-1.1.5/imports/main.less fixtures/main.less.imports
+> contents target/less-1.1.5/imports/alone.less fixtures/alone.less.imports
+> contents target/less-1.1.5/imports/nested/main.less fixtures/nested-main.less.imports
+# changing of sub.less should trigger main.less recompilation
+$ touch src/main/less/sub.less
+> less
+$ newer target/scala-2.9.1/resource_managed/main/css/main.css src/main/less/sub.less
