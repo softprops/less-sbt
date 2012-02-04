@@ -56,7 +56,7 @@ To change the default location of compiled css files, add the following to your 
 
 Some less projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which imports multiple `.less` files using the [@import](http://lesscss.org/#-importing) feature of `less`. To achieve the same kind of compilation with less-sbt, set the `filter` defined by less-sbt to the target of compilation.
 
-   (LessKeys.filter in (Compile, LessKeys.less)) := "your_main.less"
+    (LessKeys.filter in (Compile, LessKeys.less)) := "your_main.less"
 
 This will build a single `your_main.css` file which includes all of the @imported style definitions.
 
