@@ -2,7 +2,7 @@ package less
 
 import org.mozilla.javascript.{
   Callable, Context, Function, FunctionObject, JavaScriptException,
-  NativeObject, Scriptable, ScriptableObject }
+  NativeArray, NativeObject, Scriptable, ScriptableObject }
 import org.mozilla.javascript.tools.shell.{ Environment, Global }
 import java.io.InputStreamReader
 import java.nio.charset.Charset
@@ -44,19 +44,44 @@ trait ShellEmulation {
    }
 }
 
+class NativeArrayWrapper(arr: NativeArray) {
+  def toList[T](f: AnyRef => T): List[T] =
+    arr.getIds map { id => f(arr.get(id.asInstanceOf[java.lang.Integer], null)) } toList
+}
+
+object NativeArrayWrapper{
+  implicit def wrapNativeArray(arr: NativeArray): NativeArrayWrapper = new NativeArrayWrapper(arr)
+}
+
+import NativeArrayWrapper._
+
+case class CompilationResult(cssContent: String, imports: List[String])
+
+class CompilationResultHost extends ScriptableObject {
+  var compilationResult: CompilationResult = null
+
+  override def getClassName() = "CompilationResult"
+
+  def jsConstructor(css: String, imports: NativeArray) {
+    compilationResult = CompilationResult(css, imports.toList(_.toString))
+  }
+}
+
 abstract class Compiler(src: String) extends ShellEmulation {
   val utf8 = Charset.forName("utf-8")
 
-
-  def compile(name: String, code: String, mini: Boolean = false): Either[String, String] = withContext { ctx =>
+  def compile(name: String, code: String, mini: Boolean = false): CompilationResult = withContext { ctx =>
     try {
       val less = scope.get("compile", scope).asInstanceOf[Callable]
-      Right(less.call(ctx, scope, scope, Array(name, code, mini.asInstanceOf[AnyRef])).toString)
+      less.call(ctx, scope, scope, Array(name, code, mini.asInstanceOf[AnyRef])) match {
+        case o: CompilationResultHost => o.compilationResult
+        case v => sys.error("wrong return type %s: %s" format (v.getClass, v))
+      }
     } catch {
       case e : JavaScriptException =>
         e.getValue match {
           case v: Scriptable =>
-            Left(ScriptableObject.getProperty(v, "message").toString)
+            sys.error(ScriptableObject.getProperty(v, "message").toString)
           case v => sys.error("unknown exception value type %s" format v)
         }
     }
@@ -71,6 +96,7 @@ abstract class Compiler(src: String) extends ShellEmulation {
       new InputStreamReader(getClass().getResourceAsStream("/%s" format src), utf8),
       src, 1, null
     )
+    ScriptableObject.defineClass(scope, classOf[CompilationResultHost]);
     scope
   }
 
