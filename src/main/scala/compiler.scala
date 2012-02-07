@@ -43,7 +43,7 @@ trait ShellEmulation {
      s
    }
 }
----
+
 class NativeArrayWrapper(arr: NativeArray) {
   def toList[T](f: AnyRef => T): List[T] =
     arr.getIds map { id => f(arr.get(id.asInstanceOf[java.lang.Integer], null)) } toList
