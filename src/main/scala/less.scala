@@ -6,14 +6,13 @@ object Plugin extends sbt.Plugin {
   import Project.Initialize._
   import java.nio.charset.Charset
   import java.io.File
-  import LessKeys.{less => lesskey, charset, filter, excludeFilter, mini}
+  import LessKeys.{less => lesskey, charset, filter, mini}
 
   object LessKeys {
     lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources.")
     lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources. Defaults to false.")
     lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8.")
     lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources from default directories.")
-    lazy val excludeFilter = SettingKey[FileFilter]("exclude-filter", "Filter for excluding files from default directories.")
   }
 
   private val ImportsDelimiter = "\n"
