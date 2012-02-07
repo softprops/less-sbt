@@ -16,6 +16,8 @@ object Plugin extends sbt.Plugin {
     lazy val excludeFilter = SettingKey[FileFilter]("exclude-filter", "Filter for excluding files from default directories.")
   }
 
+  private val ImportsDelimiter = "\n"
+
   class LessSourceFile(val lessFile: File, sourcesDir: File, targetDir: File, cssDir: File) {
     val relPath = IO.relativize(sourcesDir, lessFile).get
 
@@ -23,7 +25,7 @@ object Plugin extends sbt.Plugin {
     lazy val importsFile = new File(targetDir, relPath + ".imports");
     lazy val parentDir = lessFile.getParentFile
 
-    def imports = IO.read(importsFile).split("\n").collect {
+    def imports = IO.read(importsFile).split(ImportsDelimiter).collect {
       case fileName if fileName.trim.length > 0 => new File(parentDir, fileName)
     }
 
@@ -43,6 +45,20 @@ object Plugin extends sbt.Plugin {
         IO.delete(target)
     }
 
+  private def compileSource(compiler: Compiler, mini: Boolean, charset: Charset, log: Logger)(lessFile: LessSourceFile) = {
+    try {
+      log.debug("Compiling %s" format lessFile)
+      val res = compiler.compile(lessFile.getPath, io.Source.fromFile(lessFile.lessFile)(io.Codec(charset)).mkString, mini)
+      IO.write(lessFile.cssFile, res.cssContent)
+      log.debug("Wrote css to file %s" format lessFile.cssFile)
+      IO.write(lessFile.importsFile, res.imports mkString ImportsDelimiter)
+      log.debug("Wrote imports to file %s" format lessFile.importsFile)
+      lessFile.cssFile
+    } catch {
+      case e => throw new RuntimeException("Error occured while compiling %s: %s" format(lessFile, e.getMessage), e)
+    }
+  }
+
   private def lessCompilerTask =
     (streams, sourceDirectory in lesskey, resourceManaged in lesskey, target in lesskey,
      filter in lesskey, excludeFilter in lesskey, charset in lesskey, mini in lesskey) map {
@@ -51,27 +67,13 @@ object Plugin extends sbt.Plugin {
             file <- sourcesDir.descendentsExcept(incl, excl).get
             val lessFile = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
             if lessFile.isChanged
-         } yield lessFile
-        ) match {
+         } yield lessFile) match {
           case Nil =>
             out.log.debug("No less sources to compile")
             Nil
           case files =>
             out.log.info("Compiling %d less sources to %s" format (files.size, cssDir))
-            files map { lessFile =>
-              try {
-                out.log.debug("Compiling %s" format lessFile)
-                val res = compiler.compile(lessFile.getPath, io.Source.fromFile(lessFile.lessFile)(io.Codec(charset)).mkString, mini)
-                IO.write(lessFile.cssFile, res.cssContent)
-                out.log.debug("Wrote css to file %s" format lessFile.cssFile)
-                IO.write(lessFile.importsFile, res.imports mkString "\n")
-                out.log.debug("Wrote imports to file %s" format lessFile.importsFile)
-                lessFile.cssFile
-              } catch {
-                 case e: Exception =>
-                  throw new RuntimeException("error occured while compiling %s: %s" format(lessFile, e.getMessage), e)
-              }
-            }
+            files map compileSource(compiler, mini, charset, out.log)
         }
     }
 
@@ -89,7 +91,7 @@ object Plugin extends sbt.Plugin {
       sourceDirectory in lesskey <<= (sourceDirectory in c) { _ / "less" },
       resourceManaged in lesskey <<= (resourceManaged in c) { _ / "css" },
       target in lesskey <<= (target in c) { _ / "less-1.1.5" },
-      cleanFiles in lesskey <<= (resourceManaged in lesskey)(_ :: Nil),
+      cleanFiles in lesskey <<= (resourceManaged in lesskey, target in lesskey)(_ :: _ :: Nil),
       watchSources in lesskey <<= (unmanagedSources in lesskey)
     )) ++ Seq(
       cleanFiles <++= (cleanFiles in lesskey in c),
