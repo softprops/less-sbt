@@ -10,3 +10,5 @@ $ exists target/less-1.1.5/nested/main.less.imports
 $ touch src/main/less/sub.less
 > less
 $ newer target/scala-2.9.1/resource_managed/main/css/main.css src/main/less/sub.less
+> clean(for less)
+-$ exists target/less-1.1.5

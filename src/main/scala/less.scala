@@ -29,8 +29,8 @@ object Plugin extends sbt.Plugin {
       case fileName if fileName.trim.length > 0 => new File(parentDir, fileName)
     }
 
-    def isChanged = !importsFile.exists || (lessFile newerThan cssFile) || (imports exists (_ newerThan cssFile))
-    def getPath = lessFile.getPath
+    def changed = !importsFile.exists || (lessFile newerThan cssFile) || (imports exists (_ newerThan cssFile))
+    def path = lessFile.getPath
 
     override def toString = lessFile.toString
   }
@@ -48,7 +48,7 @@ object Plugin extends sbt.Plugin {
   private def compileSource(compiler: Compiler, mini: Boolean, charset: Charset, log: Logger)(lessFile: LessSourceFile) = {
     try {
       log.debug("Compiling %s" format lessFile)
-      val res = compiler.compile(lessFile.getPath, io.Source.fromFile(lessFile.lessFile)(io.Codec(charset)).mkString, mini)
+      val res = compiler.compile(lessFile.path, io.Source.fromFile(lessFile.lessFile)(io.Codec(charset)).mkString, mini)
       IO.write(lessFile.cssFile, res.cssContent)
       log.debug("Wrote css to file %s" format lessFile.cssFile)
       IO.write(lessFile.importsFile, res.imports mkString ImportsDelimiter)
@@ -66,7 +66,7 @@ object Plugin extends sbt.Plugin {
         (for {
             file <- sourcesDir.descendentsExcept(incl, excl).get
             val lessFile = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
-            if lessFile.isChanged
+            if lessFile.changed
          } yield lessFile) match {
           case Nil =>
             out.log.debug("No less sources to compile")
@@ -107,8 +107,7 @@ object Plugin extends sbt.Plugin {
     charset in lesskey := Charset.forName("utf-8"),
     mini in lesskey := false,
     filter in lesskey := "*.less",
-    // change to (excludeFilter in Global) when dropping support of sbt 0.10.*
-    excludeFilter in lesskey := (".*"  - ".") || HiddenFileFilter,
+    excludeFilter in lesskey <<= excludeFilter in Global,
     unmanagedSources in lesskey <<= lessSourcesTask,
     clean in lesskey <<= lessCleanTask,
     lesskey <<= lessCompilerTask
