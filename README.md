@@ -4,7 +4,7 @@ type [less](http://lesscss.org/) css in your sbt projects
 
 ![LESS](http://lesscss.org/images/logo.png) ![Scala](https://github.com/downloads/softprops/coffeescripted-sbt/scala_logo.png)
 
-a friendly companion for [coffeescripted-sbt](https://github.com/softprops/coffeescripted-sbt#readme)
+a friendly css companion for [coffeescripted-sbt][coffeescript]
 
 ## settings
 
@@ -52,9 +52,9 @@ To change the default location of compiled css files, add the following to your 
 
     (resourceManaged in (Compile, LessKeys.less)) <<= (crossTarget in Compile)(_ / "your_preference" / "css")
 
-### working with [@import](http://lesscss.org/#-importing)s
+### working with [@import][importing]s
 
-Some less projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which imports multiple `.less` files using the [@import](http://lesscss.org/#-importing) feature of `less`. To achieve the same kind of compilation with less-sbt, set the `filter` defined by less-sbt to the target of compilation.
+Some less projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which imports multiple `.less` files using the [@import][importing] feature of `less`. To achieve the same kind of compilation with less-sbt, set the `filter` defined by less-sbt to the target of compilation.
 
     (LessKeys.filter in (Compile, LessKeys.less)) := "your_main.less"
 
@@ -62,13 +62,12 @@ This will build a single `your_main.css` file which includes all of the @importe
 
 To see an example of compiling [Bootstrap][bootstrap] itself, check out the [scripted test](https://github.com/softprops/less-sbt/tree/master/src/sbt-test/less-sbt/bootstrap).
 
-Note that using this style of design in combination is sbt's continuous execution operator, `~`, will _not_ trigger less if the primary less file's dependencies change. This is a [known issue](https://github.com/softprops/less-sbt/issues/6).
    
 All available keys are exposed through the `LessKeys` module.
 
 ## issues 
 
-Have an issue? [Tell me about it](https://github.com/softprops/less-sbt/issues)
+Have an issue? [Tell me about it][issues]
 
 ## contributions
 
@@ -76,4 +75,7 @@ I'll take them where they make sense. Please use a feature branch in your fork, 
 
 Doug Tangren (softprops) 2011
 
+[issues]: https://github.com/softprops/less-sbt/issues
+[importing]: http://lesscss.org/#-importing
 [bootstrap]: http://twitter.github.com/bootstrap/
+[coffeescript]: https://github.com/softprops/coffeescripted-sbt#readme
