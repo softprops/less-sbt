@@ -1,5 +1,6 @@
 * fixed issue with nested relative issues [#7][i7] { [kastigar][kastigar] }
 * fixed issue with imports not triggering recompilation of importing file [#6][i6] { [kastigar][kastigar] }
+* Reuse the `excludeFilter` key sbt defines
 
 [i7]: https://github.com/softprops/less-sbt/issues/7
 [i6]: https://github.com/softprops/less-sbt/issues/6
