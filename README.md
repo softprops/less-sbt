@@ -22,7 +22,7 @@ a friendly css companion for [coffeescripted-sbt][coffeescript]
 
 In your plugin definition add
     
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.5")
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.6")
     
 And in your build file add
 
@@ -73,7 +73,7 @@ Have an issue? [Tell me about it][issues]
 
 I'll take them where they make sense. Please use a feature branch in your fork, i.e. git checkout -b my-cool-feature, and if possible, write a [scripted test](http://eed3si9n.com/testing-sbt-plugins) for it.
 
-Doug Tangren (softprops) 2011
+Doug Tangren (softprops) 2011-2012
 
 [issues]: https://github.com/softprops/less-sbt/issues
 [importing]: http://lesscss.org/#-importing
