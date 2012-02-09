@@ -9,7 +9,7 @@ version <<= sbtVersion(v =>
   else error("unsupported sbt version %s" format v)
 )
 
-libraryDependencies += "rhino" % "js" % "1.7R2"
+libraryDependencies += "org.mozilla" % "rhino" % "1.7R3"
 
 publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/")
 
