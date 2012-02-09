@@ -1,0 +1,6 @@
+# should write css to a custom directory
+> compile
+# note: package should transfer output mappings of resource generators
+# to `classes` dir
+> package
+$ exists target/scala-2.9.1/classes/foo.css
