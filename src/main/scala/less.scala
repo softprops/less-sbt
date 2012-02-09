@@ -69,10 +69,11 @@ object Plugin extends sbt.Plugin {
          } yield lessFile) match {
           case Nil =>
             out.log.debug("No less sources to compile")
-            Nil
+            compiled(cssDir)
           case files =>
             out.log.info("Compiling %d less sources to %s" format (files.size, cssDir))
             files map compileSource(compiler, mini, charset, out.log)
+            compiled(cssDir)
         }
     }
 
@@ -84,6 +85,8 @@ object Plugin extends sbt.Plugin {
     }
 
   private def compiler: Compiler = less.DefaultCompiler
+
+  private def compiled(under: File) = (under ** "*.css").get
 
   def lessSettingsIn(c: Configuration): Seq[Setting[_]] =
     inConfig(c)(lessSettings0 ++ Seq(
