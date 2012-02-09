@@ -25,5 +25,5 @@ seq(lsSettings:_*)
   "Sbt plugin for compiling Less CSS sources"
 
 (licenses in LsKeys.lsync) := Seq(
-  ("MIT", url("https://github.com/softprops/less-sbt/blob/0.1.6/LICENSE"))
+  ("MIT", url("https://github.com/softprops/less-sbt/blob/0.1.7/LICENSE"))
 )
