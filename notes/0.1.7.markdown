@@ -1,3 +1,7 @@
 * fix for regression bug  [#15][i15]
+* updated version of [rhino][rhino] dependency. See what changed in Rhino [here][rhinochanges] { [melezov][melezov] }
 
 [i15]: https://github.com/softprops/less-sbt/issues/15
+[melezov]: https://github.com/melezov
+[rhino]: http://www.mozilla.org/rhino/
+[rhinochanges]: https://developer.mozilla.org/en/New_in_Rhino_1.7R3
