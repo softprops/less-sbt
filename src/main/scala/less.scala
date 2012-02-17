@@ -20,8 +20,8 @@ object Plugin extends sbt.Plugin {
   class LessSourceFile(val lessFile: File, sourcesDir: File, targetDir: File, cssDir: File) {
     val relPath = IO.relativize(sourcesDir, lessFile).get
 
-    lazy val cssFile = new File(cssDir, relPath.replace(".less",".css"))
-    lazy val importsFile = new File(targetDir, relPath + ".imports");
+    lazy val cssFile = new File(cssDir, relPath.replaceFirst("\\.less$",".css"))
+    lazy val importsFile = new File(targetDir, relPath + ".imports")
     lazy val parentDir = lessFile.getParentFile
 
     def imports = IO.read(importsFile).split(ImportsDelimiter).collect {
@@ -29,7 +29,7 @@ object Plugin extends sbt.Plugin {
     }
 
     def changed = !importsFile.exists || (lessFile newerThan cssFile) || (imports exists (_ newerThan cssFile))
-    def path = lessFile.getPath
+    def path = lessFile.getPath.replace('\\', '/')
 
     override def toString = lessFile.toString
   }
