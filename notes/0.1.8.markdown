@@ -1,0 +1,4 @@
+* fix for path issue on windows [#17][i17] { [melezov][melezov] }
+
+[i17]: https://github.com/softprops/less-sbt/pull/17
+[melezov][https://github.com/melezov]
