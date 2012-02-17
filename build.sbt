@@ -5,7 +5,7 @@ organization := "me.lessis"
 name := "less-sbt"
 
 version <<= sbtVersion(v =>
-  if(v.startsWith("0.11")) "0.1.7"
+  if(v.startsWith("0.11")) "0.1.8-SNAPSHOT"
   else error("unsupported sbt version %s" format v)
 )
 
@@ -25,5 +25,5 @@ seq(lsSettings:_*)
   "Sbt plugin for compiling Less CSS sources"
 
 (licenses in LsKeys.lsync) := Seq(
-  ("MIT", url("https://github.com/softprops/less-sbt/blob/0.1.7/LICENSE"))
+  ("MIT", url("https://github.com/softprops/less-sbt/blob/0.1.8/LICENSE"))
 )
