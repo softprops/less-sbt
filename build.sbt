@@ -20,6 +20,9 @@ seq(lsSettings:_*)
 (description in LsKeys.lsync) :=
   "Sbt plugin for compiling Less CSS sources"
 
+// ls bug https://github.com/softprops/ls/issues/54
+//(externalResolvers in LsKeys.lsync) <<= (publishTo) map { _.get :: Nil }
+
 homepage :=
   Some(url("https://github.com/softprops/less-sbt"))
 
