@@ -22,7 +22,7 @@ a friendly css companion for [coffeescripted-sbt][coffeescript]
 
 In your plugin definition, add
     
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.8")
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.9")
     
 If you have not already added the sbt community plugin resolver, to this here as well with
 
