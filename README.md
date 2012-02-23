@@ -48,7 +48,7 @@ Author your `.less` files under your project's `src/main/less` directory. After 
 
 ### using less's built-in css minification
 
-The `lesscss` provides a build-in minifier which you can to to shink your compiled css. To override the default `mini` setting, add following to your build definition after including the less settings.
+`lesscss` provides a build-in minifier which you can to to shink your compiled css. To override the default `mini` setting, add following to your build definition after including the less settings.
 
     (LessKeys.mini in (Compile, LessKeys.less)) := true
 
