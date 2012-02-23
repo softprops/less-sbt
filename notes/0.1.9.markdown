@@ -15,7 +15,7 @@ Just be sure to and the sbt community resolver for plugin releases if you do not
       new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(
         Resolver.ivyStylePatterns)
 
-And mix it your build definition with
+And mix it in your build definition with
 
     seq(lessSettings:_*)
     
