@@ -24,7 +24,7 @@ In your plugin definition, add
     
     addSbtPlugin("me.lessis" % "less-sbt" % "0.1.9")
     
-If you have not already added the sbt community plugin resolver, to this here as well with
+If you have not already added the sbt community plugin resolver, add this here as well with
 
     resolvers += Resolver.url("sbt-plugin-releases",
       new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(
