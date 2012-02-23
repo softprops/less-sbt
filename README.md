@@ -42,7 +42,7 @@ To add them to other configurations, use the provided `lessSettingsIn(config)` m
 
 ## use it
 
-Author your `.less` files under your projects `src/main/less` directory. After compiling less sources, you can find the compiled css under `path/to/resource_managed/main/css`
+Author your `.less` files under your project's `src/main/less` directory. After compiling less sources, you can find the compiled css under `path/to/resource_managed/main/css`
 
 ## customize it
 
