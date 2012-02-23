@@ -3,7 +3,7 @@
 
 It was time to pack up so `less-sbt` has moved to it's new home in a bed of ivy thanks to
 some generosity of some [friends][typesafe].
-    
+
 This means its also time for you to update your resolvers accordingly. You can install
 this plugin as you did before through your plugin definition with
 
@@ -23,7 +23,7 @@ For more information see the [readme][readme]
 
 
 [i17]: https://github.com/softprops/less-sbt/pull/17
-[melezov][https://github.com/melezov]
+[melezov]: https://github.com/melezov
 [sbtcom]: http://www.scala-sbt.org/community.html
 [typesafe]: http://www.typesafe.com/
 [readme]: https://github.com/softprops/less-sbt#readme
