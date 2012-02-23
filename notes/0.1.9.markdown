@@ -7,7 +7,7 @@ some generosity of some [friends][typesafe].
 This means its also time for you to update your resolvers accordingly. You can install
 this plugin as you did before through your plugin definition with
 
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.8")
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.9")
 
 Just be sure to and the sbt community resolver for plugin releases if you do not already
 
