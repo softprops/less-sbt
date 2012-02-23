@@ -36,7 +36,7 @@ Then in your build definition, add
     
 This will append `less-sbt`'s settings for the `Compile` and `Test` configurations.
 
-To add it to other configurations, use the provided `lessSettingsIn(config)` method.
+To add them to other configurations, use the provided `lessSettingsIn(config)` method.
 
     seq(lessSettingsIn(SomeOtherConfig):_*)
 
