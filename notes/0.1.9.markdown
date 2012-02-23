@@ -21,9 +21,11 @@ And mix it your build definition with
     
 For more information see the [readme][readme]
 
+So where did 0.1.8 go? That's what I would [like to know][mystery]!.
 
 [i17]: https://github.com/softprops/less-sbt/pull/17
 [melezov]: https://github.com/melezov
 [sbtcom]: http://www.scala-sbt.org/community.html
 [typesafe]: http://www.typesafe.com/
 [readme]: https://github.com/softprops/less-sbt#readme
+[mystery]: http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/me.lessis/less-sbt/scala_2.9.1/sbt_0.11.2/0.1.8/ivys/ivy.xml
