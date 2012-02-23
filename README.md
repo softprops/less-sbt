@@ -20,29 +20,35 @@ a friendly css companion for [coffeescripted-sbt][coffeescript]
     
 ## install it
 
-In your plugin definition add
+In your plugin definition, add
     
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.6")
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.8")
     
-And in your build file add
+If you have not already added the sbt community plugin resolver, to this here as well with
+
+    resolvers += Resolver.url("sbt-plugin-releases",
+      new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(
+        Resolver.ivyStylePatterns)
+    
+Then in your build definition, add
 
     seq(lessSettings:_*)
     
-This will add less settings for the Compile and Test configurations.
+This will append `less-sbt`'s settings for the `Compile` and `Test` configurations.
 
-To add it to other configurations, use
+To add it to other configurations, use the provided `lessSettingsIn(config)` method.
 
     seq(lessSettingsIn(SomeOtherConfig):_*)
 
 ## use it
 
-Put your `.less` files under `src/main/less` and find the compiled css under `path/to/resource_managed/main/css`
+Author your `.less` files under your projects `src/main/less` directory. After compiling less sources, you can find the compiled css under `path/to/resource_managed/main/css`
 
 ## customize it
 
 ### using less's built-in css minification
 
-To override the default `mini` setting, add following to your build definition after including the less settings.
+The `lesscss` provides a build-in minifier which you can to to shink your compiled css. To override the default `mini` setting, add following to your build definition after including the less settings.
 
     (LessKeys.mini in (Compile, LessKeys.less)) := true
 
@@ -54,16 +60,15 @@ To change the default location of compiled css files, add the following to your 
 
 ### working with [@import][importing]s
 
-Some less projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which imports multiple `.less` files using the [@import][importing] feature of `less`. To achieve the same kind of compilation with less-sbt, set the `filter` defined by less-sbt to the target of compilation.
+Some lesscss projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which imports multiple `.less` files using the [@import][importing] feature of lesscss. To achieve the same style of compilation with less-sbt, set the `filter` defined by less-sbt to the target of compilation.
 
     (LessKeys.filter in (Compile, LessKeys.less)) := "your_main.less"
 
 This will build a single `your_main.css` file which includes all of the @imported style definitions.
 
-To see an example of compiling [Bootstrap][bootstrap] itself, check out the [scripted test](https://github.com/softprops/less-sbt/tree/master/src/sbt-test/less-sbt/bootstrap).
-
+To see an example of compiling [Bootstrap][bootstrap] itself, check out the [scripted bootstrap test](https://github.com/softprops/less-sbt/tree/master/src/sbt-test/less-sbt/bootstrap).
    
-All available keys are exposed through the `LessKeys` module.
+You will find all custom `less-sbt` keys within the `LessKeys` module.
 
 ## issues 
 
