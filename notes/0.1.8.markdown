@@ -1,4 +1,29 @@
 * fix for path issue on windows [#17][i17] { [melezov][melezov] }
+* moving to a new [home][sbtcom]
+
+It was time to pack up so `less-sbt` has moved to it's new home in a bed of ivy thanks to
+some generosity of some [friends][typesafe].
+    
+This means its also time for you to update your resolvers accordingly. You can install
+this plugin as you did before through your plugin definition with
+
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.8")
+
+Just be sure to and the sbt community resolver for plugin releases if you do not already
+
+    resolvers += Resolver.url("sbt-plugin-releases",
+      new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(
+        Resolver.ivyStylePatterns)
+
+And mix it your build definition with
+
+    seq(lessSettings:_*)
+    
+For more information see the [readme][readme]
+
 
 [i17]: https://github.com/softprops/less-sbt/pull/17
 [melezov][https://github.com/melezov]
+[sbtcom]: http://www.scala-sbt.org/community.html
+[typesafe]: http://www.typesafe.com/
+[readme]: https://github.com/softprops/less-sbt#readme
