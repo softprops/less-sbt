@@ -35,7 +35,7 @@ publishMavenStyle := false
 publishArtifact in Test := false
 
 licenses := Seq("MIT" -> url(
-  "https://github.com/softprops/less-sbt/blob/0.1.8/LICENSE"))
+  "https://github.com/softprops/less-sbt/blob/0.1.9/LICENSE"))
 
 pomExtra := (
   <scm>

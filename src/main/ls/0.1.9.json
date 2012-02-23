@@ -9,7 +9,7 @@
  "docs":"",
  "licenses": [{
    "name": "MIT",
-   "url": "https://github.com/softprops/less-sbt/blob/0.1.8/LICENSE"
+   "url": "https://github.com/softprops/less-sbt/blob/0.1.9/LICENSE"
   }],
  "resolvers": ["http://scala-tools.org/repo-releases"],
  "dependencies": [{
