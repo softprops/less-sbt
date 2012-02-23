@@ -39,7 +39,7 @@ licenses := Seq("MIT" -> url(
 
 pomExtra := (
   <scm>
-    <url>git@github.com:dispatch/reboot.git</url>
+    <url>git@github.com:softprops/less-sbt.git</url>
     <connection>scm:git:git@github.com:softprops/less-sbt.git</connection>
   </scm>
   <developers>
