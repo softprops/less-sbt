@@ -35,7 +35,7 @@ object Plugin extends sbt.Plugin {
   }
 
   /** name is required as a reference point for importing relative dependencies within less */
-  type Compiler = { def compile(name: String, src: String, mini: Boolean): CompilationResult }
+  type Compiler = { def compile(name: String, src: String, mini: Boolean): Either[CompilationError, CompilationResult] }
 
   private def lessCleanTask =
     (streams, resourceManaged in lesskey) map {
@@ -44,19 +44,33 @@ object Plugin extends sbt.Plugin {
         IO.delete(target)
     }
 
-  private def compileSource(compiler: Compiler, mini: Boolean, charset: Charset, log: Logger)(lessFile: LessSourceFile) = {
+  private def compileSource(
+    compiler: Compiler, mini: Boolean,
+    charset: Charset, log: Logger)(lessFile: LessSourceFile) =
     try {
       log.debug("Compiling %s" format lessFile)
-      val res = compiler.compile(lessFile.path, io.Source.fromFile(lessFile.lessFile)(io.Codec(charset)).mkString, mini)
-      IO.write(lessFile.cssFile, res.cssContent)
-      log.debug("Wrote css to file %s" format lessFile.cssFile)
-      IO.write(lessFile.importsFile, res.imports mkString ImportsDelimiter)
-      log.debug("Wrote imports to file %s" format lessFile.importsFile)
-      lessFile.cssFile
+      compiler.compile(
+        lessFile.path,
+        io.Source.fromFile(lessFile.lessFile)(io.Codec(charset)).mkString,
+        mini).fold({ err =>
+          err match {
+            case ce: CompilationError => throw ce
+            case e => throw new RuntimeException(
+              "unexpected compilation error: %s" format e.getMessage, e)
+          }
+        }, {
+        res =>
+          IO.write(lessFile.cssFile, res.cssContent)
+          log.debug("Wrote css to file %s" format lessFile.cssFile)
+          IO.write(lessFile.importsFile, res.imports mkString ImportsDelimiter)
+          log.debug("Wrote imports to file %s" format lessFile.importsFile)
+          lessFile.cssFile
+      })
     } catch {
-      case e => throw new RuntimeException("Error occured while compiling %s: %s" format(lessFile, e.getMessage), e)
+      case e => throw new RuntimeException(
+        "Error occured while compiling %s:\n%s" format(
+        lessFile, e.getMessage), e)
     }
-  }
 
   private def lessCompilerTask =
     (streams, sourceDirectory in lesskey, resourceManaged in lesskey, target in lesskey,

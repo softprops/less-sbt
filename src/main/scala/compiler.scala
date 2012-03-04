@@ -2,7 +2,7 @@ package less
 
 import org.mozilla.javascript.{
   Callable, Context, Function, FunctionObject, JavaScriptException,
-  NativeArray, NativeObject, Scriptable, ScriptableObject }
+  NativeArray, NativeObject, Scriptable, ScriptableObject, ScriptRuntime }
 import org.mozilla.javascript.tools.shell.{ Environment, Global }
 import java.io.InputStreamReader
 import java.nio.charset.Charset
@@ -50,7 +50,8 @@ class NativeArrayWrapper(arr: NativeArray) {
 }
 
 object NativeArrayWrapper{
-  implicit def wrapNativeArray(arr: NativeArray): NativeArrayWrapper = new NativeArrayWrapper(arr)
+  implicit def wrapNativeArray(arr: NativeArray): NativeArrayWrapper =
+    new NativeArrayWrapper(arr)
 }
 
 import NativeArrayWrapper._
@@ -68,21 +69,45 @@ class CompilationResultHost extends ScriptableObject {
 }
 
 abstract class Compiler(src: String) extends ShellEmulation {
+  import scala.collection.JavaConversions._
+
   val utf8 = Charset.forName("utf-8")
 
-  def compile(name: String, code: String, mini: Boolean = false): CompilationResult = withContext { ctx =>
+  def compile(
+    name: String,
+    code: String,
+    mini: Boolean = false): Either[CompilationError, CompilationResult] =
+    withContext { ctx =>
     try {
       val less = scope.get("compile", scope).asInstanceOf[Callable]
-      less.call(ctx, scope, scope, Array(name, code, mini.asInstanceOf[AnyRef])) match {
-        case o: CompilationResultHost => o.compilationResult
-        case v => sys.error("wrong return type %s: %s" format (v.getClass, v))
+      less.call(ctx, scope, scope, Array(name, code, mini.asInstanceOf[AnyRef]))
+      match {
+        case cr: CompilationResultHost => Right(cr.compilationResult)
+        case ur => Left(UnexpectedResult(ur))
       }
     } catch {
       case e : JavaScriptException =>
         e.getValue match {
           case v: Scriptable =>
-            sys.error(ScriptableObject.getProperty(v, "message").toString)
-          case v => sys.error("unknown exception value type %s" format v)
+            val names = Seq(
+              "name", "message", "type", "filename", "line",
+              "column", "callLine", "callExtract", "stack",
+              "extract", "index")
+            val errorInfo = (Map.empty[String, Any] /: names)((a,e) =>
+              if(v.has(e, v)) v.get(e, v) match {
+                case null =>
+                  a
+                case na: NativeArray =>
+                  a + (e -> na.toArray.map(_.asInstanceOf[Any]).toSeq)
+                case dbl: java.lang.Double
+                  if(Seq("line","column", "index").contains(e)) =>
+                  a + (e -> dbl.toInt)
+                case job =>
+                  a + (e -> job.asInstanceOf[Any])
+              } else a
+             )
+            Left(LessError.from(errorInfo))
+          case ue => Left(UnexpectedError(ue))
         }
     }
   }
