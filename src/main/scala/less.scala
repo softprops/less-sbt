@@ -6,21 +6,26 @@ object Plugin extends sbt.Plugin {
   import Project.Initialize._
   import java.nio.charset.Charset
   import java.io.File
-  import LessKeys.{less => lesskey, charset, filter, mini}
+  import LessKeys.{less => lesskey, charset, filter, mini, outAppend}
 
   object LessKeys {
     lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources.")
     lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources. Defaults to false.")
     lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8.")
     lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources from default directories.")
+    lazy val outAppend = SettingKey[String]("outappend", "String to append to output filename (before file extension)")
   }
 
   private val ImportsDelimiter = "\n"
 
-  class LessSourceFile(val lessFile: File, sourcesDir: File, targetDir: File, cssDir: File) {
+  class LessSourceFile(val lessFile: File, sourcesDir: File, targetDir: File, cssDir: File, outAppend: String) {
     val relPath = IO.relativize(sourcesDir, lessFile).get
+    val cssFilename = relPath.replaceFirst("\\.less$", "") + {
+      if (outAppend.length > 0) "-%s.css".format(outAppend)
+      else ".css"
+    }
 
-    lazy val cssFile = new File(cssDir, relPath.replaceFirst("\\.less$",".css"))
+    lazy val cssFile = new File(cssDir, cssFilename)
     lazy val importsFile = new File(targetDir, relPath + ".imports")
     lazy val parentDir = lessFile.getParentFile
 
@@ -60,11 +65,12 @@ object Plugin extends sbt.Plugin {
 
   private def lessCompilerTask =
     (streams, sourceDirectory in lesskey, resourceManaged in lesskey, target in lesskey,
-     filter in lesskey, excludeFilter in lesskey, charset in lesskey, mini in lesskey) map {
-      (out, sourcesDir, cssDir, targetDir, incl, excl, charset, mini) =>
+     filter in lesskey, excludeFilter in lesskey, charset in lesskey, mini in lesskey,
+     outAppend in lesskey) map {
+      (out, sourcesDir, cssDir, targetDir, incl, excl, charset, mini, outAppend) =>
         (for {
             file <- sourcesDir.descendentsExcept(incl, excl).get
-            val lessFile = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
+            val lessFile = new LessSourceFile(file, sourcesDir, targetDir, cssDir, outAppend)
             if lessFile.changed
          } yield lessFile) match {
           case Nil =>
@@ -109,6 +115,7 @@ object Plugin extends sbt.Plugin {
     charset in lesskey := Charset.forName("utf-8"),
     mini in lesskey := false,
     filter in lesskey := "*.less",
+    outAppend in lesskey := "",
     excludeFilter in lesskey <<= excludeFilter in Global,
     unmanagedSources in lesskey <<= lessSourcesTask,
     clean in lesskey <<= lessCleanTask,
