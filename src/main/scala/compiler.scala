@@ -111,4 +111,4 @@ abstract class Compiler(src: String) extends ShellEmulation {
   }
 }
 
-object DefaultCompiler extends Compiler("less-rhino-1.1.5.js")
+object DefaultCompiler extends Compiler("less-rhino-1.1.6.js")

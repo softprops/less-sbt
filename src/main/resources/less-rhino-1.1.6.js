@@ -137,7 +137,7 @@ if (typeof environment === "object" && ({}).toString.call(environment) === "[obj
     // Node.js
     less = exports,
     tree = require('./tree');
-    less.mode = 'rhino';
+    less.mode = 'node';
 } else {
     // Browser
     if (typeof(window.less) === 'undefined') { window.less = {} }
@@ -464,7 +464,9 @@ less.Parser = function Parser(env) {
                             ]
                         };
                     }
-                    if (options.compress) {
+                    if (options.yuicompress && less.mode === 'node') {
+                        return require('./cssmin').compressor.cssmin(css);
+                    } else if (options.compress) {
                         return css.replace(/(\s)+/g, "$1");
                     } else {
                         return css;
@@ -613,7 +615,15 @@ less.Parser = function Parser(env) {
                 //
                 keyword: function () {
                     var k;
-                    if (k = $(/^[_A-Za-z-][_A-Za-z0-9-]*/)) { return new(tree.Keyword)(k) }
+
+                    if (k = $(/^[_A-Za-z-][_A-Za-z0-9-]*/)) { 
+                        if (tree.colors.hasOwnProperty(k)) {
+                            // detect named color
+                            return new(tree.Color)(tree.colors[k].slice(1));
+                        } else {
+                            return new(tree.Keyword)(k) 
+                        }
+                    }
                 },
 
                 //
@@ -629,7 +639,7 @@ less.Parser = function Parser(env) {
                 call: function () {
                     var name, args, index = i;
 
-                    if (! (name = /^([\w-]+|%)\(/.exec(chunks[j]))) return;
+                    if (! (name = /^([\w-]+|%|progid:[\w\.]+)\(/.exec(chunks[j]))) return;
 
                     name = name[1].toLowerCase();
 
@@ -649,7 +659,7 @@ less.Parser = function Parser(env) {
                 arguments: function () {
                     var args = [], arg;
 
-                    while (arg = $(this.expression)) {
+                    while (arg = $(this.entities.assignment) || $(this.expression)) {
                         args.push(arg);
                         if (! $(',')) { break }
                     }
@@ -659,6 +669,19 @@ less.Parser = function Parser(env) {
                     return $(this.entities.dimension) ||
                            $(this.entities.color) ||
                            $(this.entities.quoted);
+                },
+
+                // Assignments are argument entities for calls.
+                // They are present in ie filter properties as shown below.
+                //
+                //     filter: progid:DXImageTransform.Microsoft.Alpha( *opacity=50* )
+                //
+
+                assignment: function () {
+                    var key, value;
+                    if ((key = $(/^\w+(?=\s?=)/i)) && $('=') && (value = $(this.entity))) {
+                        return new(tree.Assignment)(key, value);
+                    }
                 },
 
                 //
@@ -734,7 +757,7 @@ less.Parser = function Parser(env) {
                     var value, c = input.charCodeAt(i);
                     if ((c > 57 || c < 45) || c === 47) return;
 
-                    if (value = $(/^(-?\d*\.?\d+)(px|%|em|pc|ex|in|deg|s|ms|pt|cm|mm|rad|grad|turn)?/)) {
+                    if (value = $(/^(-?\d*\.?\d+)(px|%|em|rem|pc|ex|in|deg|s|ms|pt|cm|mm|rad|grad|turn)?/)) {
                         return new(tree.Dimension)(value[1], value[2]);
                     }
                 },
@@ -1099,7 +1122,7 @@ less.Parser = function Parser(env) {
 
                 if (value = $(this['import'])) {
                     return value;
-                } else if (name = $(/^@media|@page/) || $(/^@(?:-webkit-|-moz-)?keyframes/)) {
+                } else if (name = $(/^@media|@page/) || $(/^@(?:-webkit-|-moz-|-o-|-ms-)[a-z0-9-]+/) || $('keyframes')) {
                     types = ($(/^[^{]+/) || '').trim();
                     if (rules = $(this.block)) {
                         return new(tree.Directive)(name + " " + types, rules);
@@ -1166,7 +1189,7 @@ less.Parser = function Parser(env) {
             multiplication: function () {
                 var m, a, op, operation;
                 if (m = $(this.operand)) {
-                    while ((op = ($('/') || $('*'))) && (a = $(this.operand))) {
+                    while (!peek(/^\/\*/) && (op = ($('/') || $('*'))) && (a = $(this.operand))) {
                         operation = new(tree.Operation)(op, [operation || m, a]);
                     }
                     return operation || m;
@@ -1387,12 +1410,21 @@ tree.functions = {
         return new(tree.Quoted)('"' + str + '"', str);
     },
     round: function (n) {
+        return this._math('round', n);
+    },
+    ceil: function (n) {
+        return this._math('ceil', n);
+    },
+    floor: function (n) {
+        return this._math('floor', n);
+    },
+    _math: function (fn, n) {
         if (n instanceof tree.Dimension) {
-            return new(tree.Dimension)(Math.round(number(n)), n.unit);
+            return new(tree.Dimension)(Math[fn](number(n)), n.unit);
         } else if (typeof(n) === 'number') {
-            return Math.round(n);
+            return Math[fn](n);
         } else {
-	    throw {
+            throw {
                 error: "RuntimeError",
                 message: "math functions take numbers as parameters"
             };
@@ -1427,6 +1459,157 @@ function clamp(val) {
 
 })(require('./tree'));
 (function (tree) {
+    tree.colors = {
+        'aliceblue':'#f0f8ff',
+        'antiquewhite':'#faebd7',
+        'aqua':'#00ffff',
+        'aquamarine':'#7fffd4',
+        'azure':'#f0ffff',
+        'beige':'#f5f5dc',
+        'bisque':'#ffe4c4',
+        'black':'#000000',
+        'blanchedalmond':'#ffebcd',
+        'blue':'#0000ff',
+        'blueviolet':'#8a2be2',
+        'brown':'#a52a2a',
+        'burlywood':'#deb887',
+        'cadetblue':'#5f9ea0',
+        'chartreuse':'#7fff00',
+        'chocolate':'#d2691e',
+        'coral':'#ff7f50',
+        'cornflowerblue':'#6495ed',
+        'cornsilk':'#fff8dc',
+        'crimson':'#dc143c',
+        'cyan':'#00ffff',
+        'darkblue':'#00008b',
+        'darkcyan':'#008b8b',
+        'darkgoldenrod':'#b8860b',
+        'darkgray':'#a9a9a9',
+        'darkgrey':'#a9a9a9',
+        'darkgreen':'#006400',
+        'darkkhaki':'#bdb76b',
+        'darkmagenta':'#8b008b',
+        'darkolivegreen':'#556b2f',
+        'darkorange':'#ff8c00',
+        'darkorchid':'#9932cc',
+        'darkred':'#8b0000',
+        'darksalmon':'#e9967a',
+        'darkseagreen':'#8fbc8f',
+        'darkslateblue':'#483d8b',
+        'darkslategray':'#2f4f4f',
+        'darkslategrey':'#2f4f4f',
+        'darkturquoise':'#00ced1',
+        'darkviolet':'#9400d3',
+        'deeppink':'#ff1493',
+        'deepskyblue':'#00bfff',
+        'dimgray':'#696969',
+        'dimgrey':'#696969',
+        'dodgerblue':'#1e90ff',
+        'firebrick':'#b22222',
+        'floralwhite':'#fffaf0',
+        'forestgreen':'#228b22',
+        'fuchsia':'#ff00ff',
+        'gainsboro':'#dcdcdc',
+        'ghostwhite':'#f8f8ff',
+        'gold':'#ffd700',
+        'goldenrod':'#daa520',
+        'gray':'#808080',
+        'grey':'#808080',
+        'green':'#008000',
+        'greenyellow':'#adff2f',
+        'honeydew':'#f0fff0',
+        'hotpink':'#ff69b4',
+        'indianred':'#cd5c5c',
+        'indigo':'#4b0082',
+        'ivory':'#fffff0',
+        'khaki':'#f0e68c',
+        'lavender':'#e6e6fa',
+        'lavenderblush':'#fff0f5',
+        'lawngreen':'#7cfc00',
+        'lemonchiffon':'#fffacd',
+        'lightblue':'#add8e6',
+        'lightcoral':'#f08080',
+        'lightcyan':'#e0ffff',
+        'lightgoldenrodyellow':'#fafad2',
+        'lightgray':'#d3d3d3',
+        'lightgrey':'#d3d3d3',
+        'lightgreen':'#90ee90',
+        'lightpink':'#ffb6c1',
+        'lightsalmon':'#ffa07a',
+        'lightseagreen':'#20b2aa',
+        'lightskyblue':'#87cefa',
+        'lightslategray':'#778899',
+        'lightslategrey':'#778899',
+        'lightsteelblue':'#b0c4de',
+        'lightyellow':'#ffffe0',
+        'lime':'#00ff00',
+        'limegreen':'#32cd32',
+        'linen':'#faf0e6',
+        'magenta':'#ff00ff',
+        'maroon':'#800000',
+        'mediumaquamarine':'#66cdaa',
+        'mediumblue':'#0000cd',
+        'mediumorchid':'#ba55d3',
+        'mediumpurple':'#9370d8',
+        'mediumseagreen':'#3cb371',
+        'mediumslateblue':'#7b68ee',
+        'mediumspringgreen':'#00fa9a',
+        'mediumturquoise':'#48d1cc',
+        'mediumvioletred':'#c71585',
+        'midnightblue':'#191970',
+        'mintcream':'#f5fffa',
+        'mistyrose':'#ffe4e1',
+        'moccasin':'#ffe4b5',
+        'navajowhite':'#ffdead',
+        'navy':'#000080',
+        'oldlace':'#fdf5e6',
+        'olive':'#808000',
+        'olivedrab':'#6b8e23',
+        'orange':'#ffa500',
+        'orangered':'#ff4500',
+        'orchid':'#da70d6',
+        'palegoldenrod':'#eee8aa',
+        'palegreen':'#98fb98',
+        'paleturquoise':'#afeeee',
+        'palevioletred':'#d87093',
+        'papayawhip':'#ffefd5',
+        'peachpuff':'#ffdab9',
+        'peru':'#cd853f',
+        'pink':'#ffc0cb',
+        'plum':'#dda0dd',
+        'powderblue':'#b0e0e6',
+        'purple':'#800080',
+        'red':'#ff0000',
+        'rosybrown':'#bc8f8f',
+        'royalblue':'#4169e1',
+        'saddlebrown':'#8b4513',
+        'salmon':'#fa8072',
+        'sandybrown':'#f4a460',
+        'seagreen':'#2e8b57',
+        'seashell':'#fff5ee',
+        'sienna':'#a0522d',
+        'silver':'#c0c0c0',
+        'skyblue':'#87ceeb',
+        'slateblue':'#6a5acd',
+        'slategray':'#708090',
+        'slategrey':'#708090',
+        'snow':'#fffafa',
+        'springgreen':'#00ff7f',
+        'steelblue':'#4682b4',
+        'tan':'#d2b48c',
+        'teal':'#008080',
+        'thistle':'#d8bfd8',
+        'tomato':'#ff6347',
+        'turquoise':'#40e0d0',
+        'violet':'#ee82ee',
+        'wheat':'#f5deb3',
+        'white':'#ffffff',
+        'whitesmoke':'#f5f5f5',
+        'yellow':'#ffff00',
+        'yellowgreen':'#9acd32'
+    };
+})(require('./tree'));
+(function (tree) {
 
 tree.Alpha = function (val) {
     this.value = val;
@@ -1457,6 +1640,22 @@ tree.Anonymous.prototype = {
 
 })(require('../tree'));
 (function (tree) {
+
+tree.Assignment = function (key, val) {
+    this.key = key;
+    this.value = val;
+};
+tree.Assignment.prototype = {
+    toCSS: function () {
+        return this.key + '=' + (this.value.toCSS ? this.value.toCSS() : this.value);
+    },
+    eval: function (env) {
+        if (this.value.eval) { this.value = this.value.eval(env) }
+        return this;
+    }
+};
+
+})(require('../tree'));(function (tree) {
 
 //
 // A function call node.
@@ -2340,7 +2539,7 @@ tree.URL = function (val, paths) {
         this.attrs = val;
     } else {
         // Add the base path if the URL is relative and we are in the browser
-        if (!/^(?:https?:\/\/|file:\/\/|data:)?/.test(val.value) && paths.length > 0 && typeof(window) !== 'undefined') {
+        if (typeof(window) !== 'undefined' && !/^(?:https?:\/\/|file:\/\/|data:|\/)/.test(val.value) && paths.length > 0) {
             val.value = paths[0] + (val.value.charAt(0) === '/' ? val.value.slice(1) : val.value);
         }
         this.value = val;
@@ -2419,7 +2618,6 @@ require('./tree').jsify = function (obj) {
         return obj.toCSS(false);
     }
 };
-
 // reference to the name in as argument in compile function
 var rootPath;
 var curPath;
