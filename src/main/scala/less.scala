@@ -10,16 +10,16 @@ object Plugin extends sbt.Plugin {
 
   object LessKeys {
     lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources.")
-    lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources. Defaults to false.")
-    lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8.")
+    lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources. Default is false.")
+    lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Default is utf-8.")
     lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources from default directories.")
   }
 
   private val ImportsDelimiter = "\n"
 
-  class LessSourceFile(val lessFile: File, sourcesDir: File, targetDir: File, cssDir: File) {
+  class LessSourceFile(val lessFile: File, sourcesDir: File,
+                       targetDir: File, cssDir: File) {
     val relPath = IO.relativize(sourcesDir, lessFile).get
-
     lazy val cssFile = new File(cssDir, relPath.replaceFirst("\\.less$",".css"))
     lazy val importsFile = new File(targetDir, relPath + ".imports")
     lazy val parentDir = lessFile.getParentFile
@@ -34,8 +34,11 @@ object Plugin extends sbt.Plugin {
     override def toString = lessFile.toString
   }
 
-  /** name is required as a reference point for importing relative dependencies within less */
-  type Compiler = { def compile(name: String, src: String, mini: Boolean): CompilationResult }
+  /** name is required as a reference point for importing relative
+   *  dependencies within less */
+  type Compiler = {
+    def compile(name: String, src: String, mini: Boolean): CompilationResult
+  }
 
   private def lessCleanTask =
     (streams, resourceManaged in lesskey) map {
@@ -44,24 +47,32 @@ object Plugin extends sbt.Plugin {
         IO.delete(target)
     }
 
-  private def compileSource(compiler: Compiler, mini: Boolean, charset: Charset, log: Logger)(lessFile: LessSourceFile) = {
+  private def compileSource(
+    compiler: Compiler, mini: Boolean,
+    charset: Charset, log: Logger)(lessFile: LessSourceFile) = {
     try {
       log.debug("Compiling %s" format lessFile)
-      val res = compiler.compile(lessFile.path, io.Source.fromFile(lessFile.lessFile)(io.Codec(charset)).mkString, mini)
+      val res = compiler.compile(
+        lessFile.path, io.Source.fromFile(
+          lessFile.lessFile)(io.Codec(charset)).mkString, mini)
       IO.write(lessFile.cssFile, res.cssContent)
       log.debug("Wrote css to file %s" format lessFile.cssFile)
       IO.write(lessFile.importsFile, res.imports mkString ImportsDelimiter)
       log.debug("Wrote imports to file %s" format lessFile.importsFile)
       lessFile.cssFile
     } catch {
-      case e => throw new RuntimeException("Error occured while compiling %s: %s" format(lessFile, e.getMessage), e)
+      case e =>
+        throw new RuntimeException("Error occured while compiling %s: %s" format(lessFile, e.getMessage), e)
     }
   }
 
   private def lessCompilerTask =
-    (streams, sourceDirectory in lesskey, resourceManaged in lesskey, target in lesskey,
-     filter in lesskey, excludeFilter in lesskey, charset in lesskey, mini in lesskey) map {
-      (out, sourcesDir, cssDir, targetDir, incl, excl, charset, mini) =>
+    (streams, sourceDirectory in lesskey,
+     resourceManaged in lesskey, target in lesskey,
+     filter in lesskey, excludeFilter in lesskey,
+     charset in lesskey, mini in lesskey) map {
+      (out, sourcesDir, cssDir, targetDir,
+       incl, excl, charset, mini) =>
         (for {
             file <- sourcesDir.descendentsExcept(incl, excl).get
             val lessFile = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
@@ -71,7 +82,8 @@ object Plugin extends sbt.Plugin {
             out.log.debug("No less sources to compile")
             compiled(cssDir)
           case files =>
-            out.log.info("Compiling %d less sources to %s" format (files.size, cssDir))
+            out.log.info("Compiling %d less sources to %s" format (
+              files.size, cssDir))
             files map compileSource(compiler, mini, charset, out.log)
             compiled(cssDir)
         }
@@ -92,7 +104,7 @@ object Plugin extends sbt.Plugin {
     inConfig(c)(lessSettings0 ++ Seq(
       sourceDirectory in lesskey <<= (sourceDirectory in c) { _ / "less" },
       resourceManaged in lesskey <<= (resourceManaged in c) { _ / "css" },
-      target in lesskey <<= (target in c) { _ / "less-1.1.5" },
+      target in lesskey <<= (target in c) { _ / "less-1.3.0" },
       cleanFiles in lesskey <<= (resourceManaged in lesskey, target in lesskey)(_ :: _ :: Nil),
       watchSources in lesskey <<= (unmanagedSources in lesskey)
     )) ++ Seq(
