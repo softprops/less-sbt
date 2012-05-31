@@ -1,9 +1,20 @@
-## Enhancements
+## Enrichment
 
-* uses embeded less compiler version 1.3.0. fixes [20][20]
-* way better error reporting for less syntax errors. fixes [19][19]
+* uses the latest embeded less compiler version [1.3.0][latestless]. fixes [20][20]
+* way better error reporting for less syntax errors. see examples [here][errs]. fixes [19][19]
 * all for less. added a new `all` task scoped to the `less` key which compiles all sources, regardless of freshness fixes [21][21]
 
+
+Get going by adding the following you your project/plugins.sbt file
+
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.10")
+  
+and adding the following to your build.sbt file
+
+    seq(lessSettings:_*)
+
+[latestless]: http://lesscss.org/
+[errs]: http://www.screenr.com/BwO8
 [19]: https://github.com/softprops/less-sbt/issues/19
 [20]: https://github.com/softprops/less-sbt/issues/20
 [21]: https://github.com/softprops/less-sbt/issues/21
