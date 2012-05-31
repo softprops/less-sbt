@@ -6,36 +6,15 @@ object Plugin extends sbt.Plugin {
   import Project.Initialize._
   import java.nio.charset.Charset
   import java.io.File
-  import LessKeys.{less => lesskey, charset, filter, mini}
+  import LessKeys.{ less => lesskey, _ }
 
   object LessKeys {
     lazy val less = TaskKey[Seq[File]]("less", "Compiles .less sources.")
-    lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources. Defaults to false.")
-    lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8.")
+    lazy val mini = SettingKey[Boolean]("mini", "Minifies compiled .less sources. Default is false.")
+    lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Default is utf-8.")
     lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources from default directories.")
+    lazy val colors = SettingKey[Boolean]("colors", "Enables ascii colored output. Default is true")
   }
-
-  private val ImportsDelimiter = "\n"
-
-  class LessSourceFile(val lessFile: File, sourcesDir: File, targetDir: File, cssDir: File) {
-    val relPath = IO.relativize(sourcesDir, lessFile).get
-
-    lazy val cssFile = new File(cssDir, relPath.replaceFirst("\\.less$",".css"))
-    lazy val importsFile = new File(targetDir, relPath + ".imports")
-    lazy val parentDir = lessFile.getParentFile
-
-    def imports = IO.read(importsFile).split(ImportsDelimiter).collect {
-      case fileName if fileName.trim.length > 0 => new File(parentDir, fileName)
-    }
-
-    def changed = !importsFile.exists || (lessFile newerThan cssFile) || (imports exists (_ newerThan cssFile))
-    def path = lessFile.getPath.replace('\\', '/')
-
-    override def toString = lessFile.toString
-  }
-
-  /** name is required as a reference point for importing relative dependencies within less */
-  type Compiler = { def compile(name: String, src: String, mini: Boolean): Either[CompilationError, CompilationResult] }
 
   private def lessCleanTask =
     (streams, resourceManaged in lesskey) map {
@@ -46,13 +25,14 @@ object Plugin extends sbt.Plugin {
 
   private def compileSource(
     compiler: Compiler, mini: Boolean,
-    charset: Charset, log: Logger)(lessFile: LessSourceFile) =
+    colors: Boolean, charset: Charset,
+    log: Logger)(lessFile: LessSourceFile) =
     try {
       log.debug("Compiling %s" format lessFile)
       compiler.compile(
         lessFile.path,
         io.Source.fromFile(lessFile.lessFile)(io.Codec(charset)).mkString,
-        mini).fold({ err =>
+        mini, colors).fold({ err =>
           err match {
             case ce: CompilationError => throw ce
             case e => throw new RuntimeException(
@@ -62,7 +42,7 @@ object Plugin extends sbt.Plugin {
         res =>
           IO.write(lessFile.cssFile, res.cssContent)
           log.debug("Wrote css to file %s" format lessFile.cssFile)
-          IO.write(lessFile.importsFile, res.imports mkString ImportsDelimiter)
+          IO.write(lessFile.importsFile, res.imports mkString Files.ImportsDelimiter)
           log.debug("Wrote imports to file %s" format lessFile.importsFile)
           lessFile.cssFile
       })
@@ -73,20 +53,24 @@ object Plugin extends sbt.Plugin {
     }
 
   private def lessCompilerTask =
-    (streams, sourceDirectory in lesskey, resourceManaged in lesskey, target in lesskey,
-     filter in lesskey, excludeFilter in lesskey, charset in lesskey, mini in lesskey) map {
-      (out, sourcesDir, cssDir, targetDir, incl, excl, charset, mini) =>
+    (streams, sourceDirectory in lesskey,
+     resourceManaged in lesskey, target in lesskey,
+     filter in lesskey, excludeFilter in lesskey,
+     charset in lesskey, mini in lesskey, colors in lesskey) map {
+      (out, sourcesDir, cssDir, targetDir,
+       incl, excl, charset, mini, colors) =>
         (for {
             file <- sourcesDir.descendentsExcept(incl, excl).get
-            val lessFile = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
-            if lessFile.changed
-         } yield lessFile) match {
+            val lessSrc = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
+            if lessSrc.changed
+         } yield lessSrc) match {
           case Nil =>
             out.log.debug("No less sources to compile")
             compiled(cssDir)
           case files =>
-            out.log.info("Compiling %d less sources to %s" format (files.size, cssDir))
-            files map compileSource(compiler, mini, charset, out.log)
+            out.log.info("Compiling %d less sources to %s" format (
+              files.size, cssDir))
+            files map compileSource(compiler, mini, colors, charset, out.log)
             compiled(cssDir)
         }
     }
@@ -106,7 +90,7 @@ object Plugin extends sbt.Plugin {
     inConfig(c)(lessSettings0 ++ Seq(
       sourceDirectory in lesskey <<= (sourceDirectory in c) { _ / "less" },
       resourceManaged in lesskey <<= (resourceManaged in c) { _ / "css" },
-      target in lesskey <<= (target in c) { _ / "less-1.1.5" },
+      target in lesskey <<= (target in c) { _ / "less-1.3.0" },
       cleanFiles in lesskey <<= (resourceManaged in lesskey, target in lesskey)(_ :: _ :: Nil),
       watchSources in lesskey <<= (unmanagedSources in lesskey)
     )) ++ Seq(
@@ -122,6 +106,7 @@ object Plugin extends sbt.Plugin {
   def lessSettings0: Seq[Setting[_]] = Seq(
     charset in lesskey := Charset.forName("utf-8"),
     mini in lesskey := false,
+    colors in lesskey := true,
     filter in lesskey := "*.less",
     excludeFilter in lesskey <<= excludeFilter in Global,
     unmanagedSources in lesskey <<= lessSourcesTask,

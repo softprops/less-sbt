@@ -7,6 +7,18 @@ import org.mozilla.javascript.tools.shell.{ Environment, Global }
 import java.io.InputStreamReader
 import java.nio.charset.Charset
 
+object Compiler {
+  type Result = Either[CompilationError, CompilationResult]
+}
+/** name is required as a reference point for importing relative
+ *  dependencies within less */
+trait Compiler {
+  import Compiler._
+  def compile(name: String,
+              code: String,
+              mini: Boolean = false,
+              colors: Boolean = true): Result
+}
 
 object ShellEmulation {
   /** common functions the rhino shell defines */
@@ -36,20 +48,27 @@ trait ShellEmulation {
    import ShellEmulation._
    def emulated(s: ScriptableObject) = {
      // define rhino shell functions
-     s.defineFunctionProperties(ShellFunctions, classOf[Global], ScriptableObject.DONTENUM)
-     // make rhino `detectable` - http://github.com/ringo/ringojs/issues/#issue/88
+     s.defineFunctionProperties(ShellFunctions,
+                                classOf[Global],
+                                ScriptableObject.DONTENUM)
+     // make rhino `detectable`
+     // http://github.com/ringo/ringojs/issues/#issue/88
+
      Environment.defineClass(s)
-     s.defineProperty("environment", new Environment(s), ScriptableObject.DONTENUM)
+     s.defineProperty("environment", new Environment(s),
+                      ScriptableObject.DONTENUM)
      s
    }
 }
 
 class NativeArrayWrapper(arr: NativeArray) {
   def toList[T](f: AnyRef => T): List[T] =
-    arr.getIds map { id => f(arr.get(id.asInstanceOf[java.lang.Integer], null)) } toList
+    arr.getIds map { id =>
+      f(arr.get(id.asInstanceOf[java.lang.Integer], null))
+    } toList
 }
 
-object NativeArrayWrapper{
+object NativeArrayWrapper {
   implicit def wrapNativeArray(arr: NativeArray): NativeArrayWrapper =
     new NativeArrayWrapper(arr)
 }
@@ -68,15 +87,19 @@ class CompilationResultHost extends ScriptableObject {
   }
 }
 
-abstract class Compiler(src: String) extends ShellEmulation {
+abstract class AbstractCompiler(src: String)
+  extends Compiler with ShellEmulation {
   import scala.collection.JavaConversions._
 
   val utf8 = Charset.forName("utf-8")
 
+  // rhino/less issue: https://github.com/cloudhead/less.js/issues/555
+
   def compile(
     name: String,
     code: String,
-    mini: Boolean = false): Either[CompilationError, CompilationResult] =
+    mini: Boolean = false,
+    colors: Boolean = true): Compiler.Result =
     withContext { ctx =>
     try {
       val less = scope.get("compile", scope).asInstanceOf[Callable]
@@ -89,25 +112,22 @@ abstract class Compiler(src: String) extends ShellEmulation {
       case e : JavaScriptException =>
         e.getValue match {
           case v: Scriptable =>
-            val names = Seq(
-              "name", "message", "type", "filename", "line",
-              "column", "callLine", "callExtract", "stack",
-              "extract", "index")
-            val errorInfo = (Map.empty[String, Any] /: names)((a,e) =>
-              if(v.has(e, v)) v.get(e, v) match {
-                case null =>
-                  a
-                case na: NativeArray =>
-                  a + (e -> na.toArray.map(_.asInstanceOf[Any]).toSeq)
-                case dbl: java.lang.Double
-                  if(Seq("line","column", "index").contains(e)) =>
-                  a + (e -> dbl.toInt)
-                case job =>
-                  a + (e -> job.asInstanceOf[Any])
-              } else a
-             )
-            Left(LessError.from(errorInfo))
-          case ue => Left(UnexpectedError(ue))
+            val errorInfo = (Map.empty[String, Any] /: LessError.Properties)(
+              (a,e) =>
+                if(v.has(e, v)) v.get(e, v) match {
+                  case null =>
+                    a
+                  case na: NativeArray =>
+                    a + (e -> na.toArray.map(_.asInstanceOf[Any]).toSeq)
+                  case dbl: java.lang.Double
+                    if(Seq("line","column", "index").contains(e)) =>
+                    a + (e -> dbl.toInt)
+                  case job =>
+                    a + (e -> job.asInstanceOf[Any])
+                } else a
+            )
+            Left(LessError.from(colors, errorInfo))
+          case ue => Left(UnexpectedError(ue)) // null, undefined, Boolean, Number, String, or Function
         }
     }
   }
@@ -118,7 +138,8 @@ abstract class Compiler(src: String) extends ShellEmulation {
     val scope = emulated(ctx.initStandardObjects())
     ctx.evaluateReader(
       scope,
-      new InputStreamReader(getClass().getResourceAsStream("/%s" format src), utf8),
+      new InputStreamReader(getClass().getResourceAsStream("/%s" format src),
+                            utf8),
       src, 1, null
     )
     ScriptableObject.defineClass(scope, classOf[CompilationResultHost]);
@@ -128,7 +149,8 @@ abstract class Compiler(src: String) extends ShellEmulation {
   private def withContext[T](f: Context => T): T = {
     val ctx = Context.enter()
     try {
-      ctx.setOptimizationLevel(-1) // Do not compile to byte code (max 64kb methods)
+      // Do not compile to byte code (max 64kb methods)
+      ctx.setOptimizationLevel(-1)
       f(ctx)
     } finally {
       Context.exit()
@@ -136,4 +158,7 @@ abstract class Compiler(src: String) extends ShellEmulation {
   }
 }
 
-object DefaultCompiler extends Compiler("less-rhino-1.1.5.js")
+// https://github.com/rolos79/ant-build-script/blob/844bcf74e8d48afda5e5643aa0db8dcd3c125e71/tools/less-rhino-1.3.0.js
+// https://github.com/woeye/less.js/blob/b98a6f7537c252d71746862794591e164b0c7238/dist/less-rhino-1.3.0.js
+
+object DefaultCompiler extends AbstractCompiler("less-rhino-1.3.0.js")

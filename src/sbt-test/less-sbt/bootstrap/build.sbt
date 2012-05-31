@@ -13,11 +13,14 @@ InputKey[Unit]("contents") <<= inputTask { (argsTask: TaskKey[Seq[String]]) =>
           if(IO.read(file(given)).trim.equals(IO.read(file(expected)).trim)) out.log.debug(
             "Contents match"
           )
-          else error(
+          else {
+            println(IO.read(file(expected)))
+            error(
             "Contents of (%s)\n%s does not match (%s)\n%s" format(
               given, IO.read(file(given)), expected, IO.read(file(expected))
             )
           )
+          }
       }
   }
 }

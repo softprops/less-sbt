@@ -1,0 +1,2 @@
+* uses embeded less compiler version 1.3.0
+* better error reporting for less syntax errors

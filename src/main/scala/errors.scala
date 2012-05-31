@@ -13,13 +13,20 @@ case class UnexpectedError(err: Any) extends CompilationError {
 }
 
 object LessError {
+  val Properties = Seq(
+    "name", "message", "type", "filename", "line",
+    "column", "callLine", "callExtract", "stack",
+    "extract", "index")
+
   val UndefVar = """variable (@.*) is undefined""".r
-  def from(props: Map[String, Any]): CompilationError =
-    if(props.isDefinedAt("name") && props("name").equals("ParseError")) ParseError(
+
+  def from(colors: Boolean, props: Map[String, Any]): CompilationError =
+    if (ParseError.is(props)) ParseError(
       props("line").toString.toInt,
       props("column").toString.toInt,
       props("message").toString,
-      props("extract").asInstanceOf[Seq[String]]
+      props("extract").asInstanceOf[Seq[String]],
+      colors
     ) else if(props.isDefinedAt("message")) {
       UndefVar.findFirstMatchIn(props("message").toString) match {
         case Some(mat) =>
@@ -27,7 +34,8 @@ object LessError {
             mat.group(1),
             props("line").toString.toInt,
             props("column").toString.toInt,
-            props("extract").asInstanceOf[Seq[String]]
+            props("extract").asInstanceOf[Seq[String]],
+            colors
           )
         case _ => GenericLessError(props)
       }
@@ -35,35 +43,44 @@ object LessError {
 }
 
 trait Extracts {
-  def showExtract(line: Int, col: Int, extract: Seq[String]) =
+  def showExtract(line: Int, col: Int, extract: Seq[String], colors: Boolean = false) =
     (extract.size.toString.size, extract) match {
       case (pad, Seq(null, at, after)) =>
-        "\n >%" + pad + "d| %s\n  %" + pad + "d| %s".format(
-          line, at, line + 1, after
+        ("\n %s %" + pad + "d| %s\n   %" + pad + "d| %s").format(
+          err(colors,">"), line, err(colors, at), line + 1, after
         )
       case (pad, Seq(before, at, null)) =>
-        "\n  %" + pad + "d| %s\n> %" + pad + "d| %s".format(
-          line - 1, before, line, at
+        ("\n  %" + pad + "d| %s\n%s %" + pad + "d| %s").format(
+          line - 1, before, err(colors, ">"), line, err(colors, at)
         )
       case (pad, Seq(before, at, after)) =>
-        "\n  %" + pad + "d| %s\n> %" + pad + "d| %s\n  %" + pad + "d| %s".format(
-          line - 1, before, line, at, line + 1, after
+        ("\n  %" + pad + "d| %s\n%s %" + pad + "d| %s\n  %" + pad + "d| %s").format(
+          line - 1, before, err(colors, ">"), line, err(colors, at), line + 1, after
         )
-      case ext => ext.mkString("\n | ", " | %\n", "")
+      case (pad, ext) =>
+        ext.mkString("\n | ", " | %\n", "")
     }
+  protected def err(colors: Boolean, str: String) =
+    if (colors) Console.RED_B + str + Console.RESET else str
 }
 
-case class ParseError(line: Int, column: Int, message: String, extract: Seq[String])
+object ParseError {
+  def is(props: Map[String, Any]) =
+    ((props.isDefinedAt("name") && props("name").equals("ParseError"))
+     || props.isDefinedAt("type") && props("type").equals("Parse"))
+}
+case class ParseError(line: Int, column: Int, message: String, extract: Seq[String], colors: Boolean)
 extends CompilationError with Extracts {
-  override def getMessage = "Parse error on line: %s, column: %s%s" format(
-    line, column, showExtract(line, column, extract)
-  )
+  override def getMessage =
+    "Parse error on line: %s, column: %s (%s)%s" format(
+      line, column, message, showExtract(line, column, extract, colors)
+    )
 }
 
-case class UndefinedVar(name: String, line: Int, column: Int, extract: Seq[String])
+case class UndefinedVar(name: String, line: Int, column: Int, extract: Seq[String], colors: Boolean)
 extends CompilationError with Extracts {
   override def getMessage = "Undefined variable %s on line: %s, column: %s%s" format(
-    name, line, column, showExtract(line, column, extract)
+    err(colors, name), line, column, showExtract(line, column, extract, colors)
   )
 }
 
