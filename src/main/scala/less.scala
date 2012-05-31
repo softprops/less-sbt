@@ -1,5 +1,8 @@
 package less
 
+/**
+ * An sbt plugin interface for lesscss.org 1.3.0 compiler
+ */
 object Plugin extends sbt.Plugin {
   import sbt._
   import sbt.Keys._
@@ -14,6 +17,7 @@ object Plugin extends sbt.Plugin {
     lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Default is utf-8.")
     lazy val filter = SettingKey[FileFilter]("filter", "Filter for selecting less sources from default directories.")
     lazy val colors = SettingKey[Boolean]("colors", "Enables ascii colored output. Default is true")
+    lazy val all = TaskKey[Seq[File]]("all", "Compiles all .less sources regardless of freshness")
   }
 
   private def lessCleanTask =
@@ -52,28 +56,35 @@ object Plugin extends sbt.Plugin {
         lessFile, e.getMessage), e)
     }
 
+  private def allCompilerTask =
+    (streams, sourceDirectory in lesskey,
+     resourceManaged in lesskey, target in lesskey,
+     filter in lesskey, excludeFilter in lesskey,
+     charset in lesskey, mini in lesskey, colors in lesskey) map compileIf { _ => true }
+
   private def lessCompilerTask =
     (streams, sourceDirectory in lesskey,
      resourceManaged in lesskey, target in lesskey,
      filter in lesskey, excludeFilter in lesskey,
-     charset in lesskey, mini in lesskey, colors in lesskey) map {
-      (out, sourcesDir, cssDir, targetDir,
-       incl, excl, charset, mini, colors) =>
-        (for {
-            file <- sourcesDir.descendentsExcept(incl, excl).get
-            val lessSrc = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
-            if lessSrc.changed
-         } yield lessSrc) match {
-          case Nil =>
-            out.log.debug("No less sources to compile")
-            compiled(cssDir)
-          case files =>
-            out.log.info("Compiling %d less sources to %s" format (
-              files.size, cssDir))
-            files map compileSource(compiler, mini, colors, charset, out.log)
-            compiled(cssDir)
-        }
-    }
+     charset in lesskey, mini in lesskey, colors in lesskey) map compileIf(_.changed)
+
+  private def compileIf(cond: LessSourceFile => Boolean)
+    (out: std.TaskStreams[Project.ScopedKey[_]], sourcesDir: File, cssDir: File, targetDir: File,
+     incl: FileFilter, excl: FileFilter, charset: Charset, mini: Boolean, colors: Boolean) =
+       (for {
+         file <- sourcesDir.descendentsExcept(incl, excl).get
+         val lessSrc = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
+         if cond(lessSrc)
+       } yield lessSrc) match {
+         case Nil =>
+           out.log.debug("No less sources to compile")
+           compiled(cssDir)
+         case files =>
+           out.log.info("Compiling %d less sources to %s" format (
+           files.size, cssDir))
+           files map compileSource(compiler, mini, colors, charset, out.log)
+           compiled(cssDir)
+       }
 
   // move defaultExcludes to excludeFilter in unmanagedSources later
   private def lessSourcesTask =
@@ -111,6 +122,7 @@ object Plugin extends sbt.Plugin {
     excludeFilter in lesskey <<= excludeFilter in Global,
     unmanagedSources in lesskey <<= lessSourcesTask,
     clean in lesskey <<= lessCleanTask,
-    lesskey <<= lessCompilerTask
+    lesskey <<= lessCompilerTask,
+    all in lesskey <<= allCompilerTask
   )
 }
