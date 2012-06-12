@@ -8,6 +8,7 @@ a friendly css companion for [coffeescripted-sbt][coffeescript]
 
 ## settings
 
+    all(for less) # compiles all less source files regardless of freshness
     less # compiles less source files
     charset(for less) # character encoding used in file IO (defaults to utf-8)
     mini(for less) # setting for compiled minification (false by default)
