@@ -1,4 +1,4 @@
 # should generate css
 > less
-$ exists target/scala-2.9.1/resource_managed/main/css/foo.css
-> contents target/scala-2.9.1/resource_managed/main/css/foo.css fixtures/foo.css
+$ exists target/scala-2.9.2/resource_managed/main/css/foo.css
+> contents target/scala-2.9.2/resource_managed/main/css/foo.css fixtures/foo.css
