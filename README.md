@@ -4,7 +4,7 @@ type [less](http://lesscss.org/) css in your sbt projects
 
 ![LESS](http://lesscss.org/images/logo.png) ![Scala](https://github.com/downloads/softprops/coffeescripted-sbt/scala_logo.png)
 
-a friendly css companion for [coffeescripted-sbt][coffeescript]
+a friendly css companion for [coffeescripted-sbt][coffeescript] using the less 1.3.0 embedded compiler.
 
 ## settings
 
@@ -23,7 +23,7 @@ a friendly css companion for [coffeescripted-sbt][coffeescript]
 
 In your plugin definition, add
     
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.9")
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.10")
     
 If you have not already added the sbt community plugin resolver, add this here as well with
 
