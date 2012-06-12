@@ -10,5 +10,5 @@ $ exists target/less-1.3.0/nested/main.less.imports
 $ touch src/main/less/sub.less
 > less
 $ newer target/scala-2.9.2/resource_managed/main/css/main.css src/main/less/sub.less
-> less::clean-files
--$ exists target/less-1.3.0/
+#> less::clean-files
+#-$ exists target/less-1.3.0/
