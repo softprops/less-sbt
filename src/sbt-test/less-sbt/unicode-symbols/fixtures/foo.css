@@ -1,8 +1,1 @@
-cite {
-  font-style: italic;
-  float: right;
-  font-size: 11px;
-}
-cite:before {
-  content: "— ";
-}
+cite{font-style:italic;float:right;font-size:11px;}cite:before{content:"— ";}

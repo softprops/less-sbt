@@ -1,5 +1,7 @@
 seq(lessSettings:_*)
 
+LessKeys.mini in (Compile, LessKeys.less) := true
+
 InputKey[Unit]("contents") <<= inputTask { (argsTask: TaskKey[Seq[String]]) =>
   (argsTask, streams) map {
     (args, out) =>
