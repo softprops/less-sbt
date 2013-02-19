@@ -72,7 +72,7 @@ object Plugin extends sbt.Plugin {
     (out: std.TaskStreams[Project.ScopedKey[_]], sourcesDir: File, cssDir: File, targetDir: File,
      incl: FileFilter, excl: FileFilter, charset: Charset, mini: Boolean, colors: Boolean) =
        (for {
-         file <- sourcesDir.descendentsExcept(incl, excl).get
+         file <- sourcesDir.descendantsExcept(incl, excl).get
          val lessSrc = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
          if cond(lessSrc)
        } yield lessSrc) match {
@@ -90,7 +90,7 @@ object Plugin extends sbt.Plugin {
   private def lessSourcesTask =
     (sourceDirectory in lesskey, filter in lesskey, excludeFilter in lesskey) map {
       (sourceDir, filt, excl) =>
-         sourceDir.descendentsExcept(filt, excl).get
+         sourceDir.descendantsExcept(filt, excl).get
     }
 
   private def compiler: Compiler = less.DefaultCompiler
