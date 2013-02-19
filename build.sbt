@@ -9,6 +9,8 @@ version <<= sbtVersion(v =>
   else error("unsupported sbt version %s" format v)
 )
 
+scalacOptions += "-deprecation"
+
 libraryDependencies += "org.mozilla" % "rhino" % "1.7R3"
 
 seq(scriptedSettings:_*)
