@@ -127,7 +127,8 @@ abstract class AbstractCompiler(src: String)
                 } else a
             )
             Left(LessError.from(colors, errorInfo))
-          case ue => Left(UnexpectedError(ue)) // null, undefined, Boolean, Number, String, or Function
+          case ue =>
+            Left(UnexpectedError(ue)) // null, undefined, Boolean, Number, String, or Function
         }
     }
   }
@@ -158,7 +159,4 @@ abstract class AbstractCompiler(src: String)
   }
 }
 
-// https://github.com/rolos79/ant-build-script/blob/844bcf74e8d48afda5e5643aa0db8dcd3c125e71/tools/less-rhino-1.3.0.js
-// https://github.com/woeye/less.js/blob/b98a6f7537c252d71746862794591e164b0c7238/dist/less-rhino-1.3.0.js
-
-object DefaultCompiler extends AbstractCompiler("less-rhino-1.3.0.js")
+object DefaultCompiler extends AbstractCompiler("less-rhino-1.3.3.js")
