@@ -16,7 +16,7 @@ object LessError {
   val Properties = Seq(
     "name", "message", "type", "filename", "line",
     "column", "callLine", "callExtract", "stack",
-    "extract", "index")
+    "extract", "index", "filename")
 
   val UndefVar = """variable (@.*) is undefined""".r
 
@@ -25,6 +25,13 @@ object LessError {
       props("line").toString.toInt,
       props("column").toString.toInt,
       props("message").toString,
+      props("extract").asInstanceOf[Seq[String]],
+      colors
+    ) else if (SyntaxError.is(props)) SyntaxError(
+      props("line").toString.toInt,
+      props("column").toString.toInt,
+      props("message").toString,
+      props("filename").toString,
       props("extract").asInstanceOf[Seq[String]],
       colors
     ) else if(props.isDefinedAt("message")) {
@@ -62,6 +69,18 @@ trait Extracts {
     }
   protected def err(colors: Boolean, str: String) =
     if (colors) Console.RED_B + str + Console.RESET else str
+}
+
+
+object SyntaxError {
+  def is(props: Map[String, Any]) =
+    (props.isDefinedAt("type") && props("type").equals("Syntax"))
+}
+case class SyntaxError(line: Int, column: Int, message: String, filename: String, extract: Seq[String], colors: Boolean) extends CompilationError with Extracts {
+  override def getMessage =
+    "Syntax error on line: %s, column: %s in file %s (%s)%s" format(
+      line, column, filename, message, showExtract(line, column, extract, colors)
+    )
 }
 
 object ParseError {
