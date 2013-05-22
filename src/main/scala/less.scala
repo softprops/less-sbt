@@ -1,5 +1,7 @@
 package less
 
+import lesst.{ Compile => _, _ }
+
 /**
  * An sbt plugin interface for lesscss.org 1.3.0 compiler
  */
@@ -28,15 +30,15 @@ object Plugin extends sbt.Plugin {
     }
 
   private def compileSource(
-    compiler: Compiler, mini: Boolean,
+    compiler: AbstractCompile, mini: Boolean,
     colors: Boolean, charset: Charset,
     log: Logger)(lessFile: LessSourceFile) =
     try {
       log.debug("Compiling %s" format lessFile)
-      compiler.compile(
+      compiler(
         lessFile.path,
         io.Source.fromFile(lessFile.lessFile)(io.Codec(charset)).mkString,
-        mini, colors).fold({ err =>
+        Options(mini = mini, colors = colors)).fold({ err =>
           err match {
             case ce: CompilationError => throw ce
             case e => throw new RuntimeException(
@@ -93,7 +95,7 @@ object Plugin extends sbt.Plugin {
          sourceDir.descendantsExcept(filt, excl).get
     }
 
-  private def compiler: Compiler = less.DefaultCompiler
+  private def compiler: AbstractCompile = lesst.DefaultCompile
 
   private def compiled(under: File) = (under ** "*.css").get
 
