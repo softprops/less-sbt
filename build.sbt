@@ -13,6 +13,8 @@ scalacOptions += "-deprecation"
 
 libraryDependencies += "org.mozilla" % "rhino" % "1.7R3"
 
+libraryDependencies += "me.lessis" %% "lesst" % "0.1.0-SNAPSHOT"
+
 seq(scriptedSettings:_*)
 
 seq(lsSettings:_*)
