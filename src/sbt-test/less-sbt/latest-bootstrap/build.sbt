@@ -14,7 +14,6 @@ InputKey[Unit]("contents") <<= inputTask { (argsTask: TaskKey[Seq[String]]) =>
             "Contents match"
           )
           else {
-            println(IO.read(file(expected)))
             error(
             "Contents of (%s)\n%s does not match (%s)\n%s" format(
               given, IO.read(file(given)), expected, IO.read(file(expected))
