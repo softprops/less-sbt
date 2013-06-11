@@ -63,12 +63,13 @@ trait ShellEmulation {
 
 class NativeArrayWrapper(arr: NativeArray) {
   def toList[T](f: AnyRef => T): List[T] =
-    arr.getIds map { id =>
+    (arr.getIds map { id =>
       f(arr.get(id.asInstanceOf[java.lang.Integer], null))
-    } toList
+    }).toList
 }
 
 object NativeArrayWrapper {
+  import scala.language.implicitConversions
   implicit def wrapNativeArray(arr: NativeArray): NativeArrayWrapper =
     new NativeArrayWrapper(arr)
 }

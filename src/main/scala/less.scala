@@ -1,12 +1,13 @@
 package less
 
+import scala.util.control.NonFatal
+
 /**
  * An sbt plugin interface for lesscss.org 1.3.0 compiler
  */
 object Plugin extends sbt.Plugin {
   import sbt._
   import sbt.Keys._
-  import Project.Initialize._
   import java.nio.charset.Charset
   import java.io.File
   import LessKeys.{ less => lesskey, _ }
@@ -39,7 +40,7 @@ object Plugin extends sbt.Plugin {
         mini, colors).fold({ err =>
           err match {
             case ce: CompilationError => throw ce
-            case e => throw new RuntimeException(
+            case NonFatal(e) => throw new RuntimeException(
               "unexpected compilation error: %s" format e.getMessage, e)
           }
         }, {
@@ -51,7 +52,7 @@ object Plugin extends sbt.Plugin {
           lessFile.cssFile
       })
     } catch {
-      case e => throw new RuntimeException(
+      case NonFatal(e) => throw new RuntimeException(
         "Error occured while compiling %s:\n%s" format(
         lessFile, e.getMessage), e)
     }
@@ -69,7 +70,7 @@ object Plugin extends sbt.Plugin {
      charset in lesskey, mini in lesskey, colors in lesskey) map compileIf(_.changed)
 
   private def compileIf(cond: LessSourceFile => Boolean)
-    (out: std.TaskStreams[Project.ScopedKey[_]], sourcesDir: File, cssDir: File, targetDir: File,
+    (out: std.TaskStreams[Def.ScopedKey[_]], sourcesDir: File, cssDir: File, targetDir: File,
      incl: FileFilter, excl: FileFilter, charset: Charset, mini: Boolean, colors: Boolean) =
        (for {
          file <- sourcesDir.descendantsExcept(incl, excl).get
