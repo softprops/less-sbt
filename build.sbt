@@ -4,12 +4,12 @@ organization := "me.lessis"
 
 name := "less-sbt"
 
-sbtVersion in Global := "0.13.0-Beta2"
+sbtVersion in Global := "0.13.0-RC1"
 
-scalaVersion in Global := "2.10.2-RC2"
+scalaVersion in Global := "2.10.2"
 
 version <<= sbtVersion(v =>
-  if (v.startsWith("0.11") || v.startsWith("0.12") || v.startsWith("0.13")) "0.1.11-SNAPSHOT"
+  if (v.startsWith("0.11") || v.startsWith("0.12") || v.startsWith("0.13")) "0.1.10"
   else error("unsupported sbt version %s" format v)
 )
 
