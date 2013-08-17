@@ -23,7 +23,7 @@ object Plugin extends sbt.Plugin {
   private def lessCleanTask =
     (streams, resourceManaged in lesskey) map {
       (out, target) =>
-        out.log.info("Cleaning generated CSS under " + target)
+        out.log.info("Cleaning generated CSS under %s" format target)
         IO.delete(target)
     }
 
