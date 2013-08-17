@@ -1,10 +1,11 @@
+
 # less sbt
 
 type [less](http://lesscss.org/) css in your sbt projects
 
 ![LESS](http://lesscss.org/images/logo.png) ![Scala](https://github.com/downloads/softprops/coffeescripted-sbt/scala_logo.png)
 
-a friendly css companion for [coffeescripted-sbt][coffeescript] using the less 1.3.0 embedded compiler.
+a friendly css companion for [coffeescripted-sbt][coffeescript] using the less 1.4.2 embedded compiler via [lesst](https://github.com/softprops/lesst#readme).
 
 ## settings
 
@@ -12,6 +13,8 @@ a friendly css companion for [coffeescripted-sbt][coffeescript] using the less 1
     less # compiles less source files
     charset(for less) # character encoding used in file IO (defaults to utf-8)
     mini(for less) # setting for compiled minification (false by default)
+    colors(for less) # setting for color error output (true by default)
+    lessCompiler(for less) # task for resolving the less compiler to compile .less sources
     filter(for less) # filter for files included by the plugin
     exclude-filter(for less) # filter for files ignored by the plugin
     unmanaged-sources(for less) # lists resolved less sources
@@ -23,7 +26,10 @@ a friendly css companion for [coffeescripted-sbt][coffeescript] using the less 1
 
 In your plugin definition, add
     
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.10")
+    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.11")
+    
+
+( TODO reference in bintray resolver )
     
 If you have not already added the sbt community plugin resolver, add this here as well with
 
@@ -79,7 +85,7 @@ Have an issue? [Tell me about it][issues]
 
 I'll take them where they make sense. Please use a feature branch in your fork, i.e. git checkout -b my-cool-feature, and if possible, write a [scripted test](http://eed3si9n.com/testing-sbt-plugins) for it.
 
-Doug Tangren (softprops) 2011-2012
+Doug Tangren (softprops) 2011-2013
 
 [issues]: https://github.com/softprops/less-sbt/issues
 [importing]: http://lesscss.org/#-importing
