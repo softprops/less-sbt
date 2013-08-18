@@ -9,6 +9,6 @@ $ exists target/less-1.4.2/nested/main.less.imports
 # changing of sub.less should trigger main.less recompilation
 $ touch src/main/less/sub.less
 > less
-$ newer target/scala-2.9.2/resource_managed/main/css/main.css src/main/less/sub.less
+$ newer target/scala-2.10/resource_managed/main/css/main.css src/main/less/sub.less
 #> less::clean-files
 #-$ exists target/less-1.4.2/

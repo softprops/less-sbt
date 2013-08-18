@@ -1,5 +1,5 @@
 # should only compiled less files
 # matching filter
 > less
-$ exists target/scala-2.9.2/resource_managed/main/css/foo.css
--$ exists target/scala-2.9.2/resource_managed/main/css/bar.lib.css
+$ exists target/scala-2.10/resource_managed/main/css/foo.css
+-$ exists target/scala-2.10/resource_managed/main/css/bar.lib.css

@@ -3,4 +3,4 @@
 # note: package should transfer output mappings of resource generators
 # to `classes` dir
 > package
-$ exists target/scala-2.9.2/classes/foo.css
+$ exists target/scala-2.10/classes/foo.css

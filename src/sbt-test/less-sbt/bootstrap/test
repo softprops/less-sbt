@@ -1,4 +1,4 @@
 # should compile twttr bootstap
 > less
-$ exists target/scala-2.9.2/resource_managed/main/css/bootstrap.css
-> contents target/scala-2.9.2/resource_managed/main/css/bootstrap.css fixtures/bootstrap.css
+$ exists target/scala-2.10/resource_managed/main/css/bootstrap.css
+> contents target/scala-2.10/resource_managed/main/css/bootstrap.css fixtures/bootstrap.css
