@@ -9,6 +9,8 @@ a friendly css companion for [coffeescripted-sbt][coffeescript] using the less 1
 
 ## settings
 
+For sbt 0.12 users
+
     all(for less) # compiles all less source files regardless of freshness
     less # compiles less source files
     charset(for less) # character encoding used in file IO (defaults to utf-8)
@@ -22,30 +24,39 @@ a friendly css companion for [coffeescripted-sbt][coffeescript] using the less 1
     config:source-directory(for less) # where less files will be resolved from
     config:resource-managed(for less) # where compiled css will be copied to
     
+For sbt 0.13 users, the syntax slightly changed. setting keys are now camel cased from the REPL and are accessed when prefiexed with `less::`.
+
+
 ## install it
 
 In your plugin definition, add
-    
-    addSbtPlugin("me.lessis" % "less-sbt" % "0.1.11")
-    
 
-( TODO reference in bintray resolver )
-    
-If you have not already added the sbt community plugin resolver, add this here as well with
+```scala    
+addSbtPlugin("me.lessis" % "less-sbt" % "0.2.0")
+```
+   
+For sbt 0.13 users add the following resolver to your plugin configuration
 
-    resolvers += Resolver.url("sbt-plugin-releases",
-      new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(
-        Resolver.ivyStylePatterns)
+```scala
+resolvers += Resolver.url(
+  "bintray-sbt-plugin-releases",
+      url("http://dl.bintray.com/content/sbt/sbt-plugin-releases"))(
+              Resolver.ivyStylePatterns)
+```
     
 Then in your build definition, add
 
-    seq(lessSettings:_*)
+```scala
+seq(lessSettings:_*)
+```
     
 This will append `less-sbt`'s settings for the `Compile` and `Test` configurations.
 
 To add them to other configurations, use the provided `lessSettingsIn(config)` method.
 
-    seq(lessSettingsIn(SomeOtherConfig):_*)
+```scala
+seq(lessSettingsIn(SomeOtherConfig):_*)
+```
 
 ## use it
 
@@ -55,21 +66,27 @@ Author your `.less` files under your project's `src/main/less` directory. After 
 
 ### using less's built-in css minification
 
-`lesscss` provides a built-in minifier which you can to to shink your compiled css. To override the default `mini` setting, add following to your build definition after including the less settings.
+Less css, itself, provides a built-in minifier which you can to to shink your compiled css. To override the default `mini` setting, add following to your build definition after including the less settings.
 
-    (LessKeys.mini in (Compile, LessKeys.less)) := true
+```scala
+(LessKeys.mini in (Compile, LessKeys.less)) := true
+```
 
 ### changing target css destination
 
 To change the default location of compiled css files, add the following to your build definition
 
-    (resourceManaged in (Compile, LessKeys.less)) <<= (crossTarget in Compile)(_ / "your_preference" / "css")
+```scala
+(resourceManaged in (Compile, LessKeys.less)) <<= (crossTarget in Compile)(_ / "your_preference" / "css")
+```
 
 ### working with [@import][importing]s
 
 Some lesscss projects, like [Twitter's Bootstrap][bootstrap] project contain one main `.less` file which imports multiple `.less` files using the [@import][importing] feature of lesscss. To achieve the same style of compilation with less-sbt, set the `filter` defined by less-sbt to the target of compilation.
 
-    (LessKeys.filter in (Compile, LessKeys.less)) := "your_main.less"
+```scala
+(LessKeys.filter in (Compile, LessKeys.less)) := "your_main.less"
+```
 
 This will build a single `your_main.css` file which includes all of the @imported style definitions.
 

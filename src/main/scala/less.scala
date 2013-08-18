@@ -2,8 +2,7 @@ package less
 
 import sbt._
 import sbt.Keys._
-import sbt.Project.{ Initialize, ScopedKey }
-//import scala.util.control.NonFatal
+import sbt.Def.{ Initialize, ScopedKey }
 import java.io.File
 import java.nio.charset.Charset
 
