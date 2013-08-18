@@ -4,18 +4,21 @@ organization := "me.lessis"
 
 name := "less-sbt"
 
-sbtVersion in Global := "0.13.0-RC1"
+//sbtVersion in Global := "0.13.0-RC1"
 
-scalaVersion in Global := "2.10.2"
+//scalaVersion in Global := "2.10.2"
 
 version <<= sbtVersion(v =>
   if (v.startsWith("0.11") || v.startsWith("0.12") || v.startsWith("0.13")) "0.2.0-SNAPSHOT"
   else error("unsupported sbt version %s" format v)
 )
 
-scalacOptions ++= Seq("-deprecation", "-feature")
 
-libraryDependencies += "me.lessis" %% "lesst" % "0.1.0-SNAPSHOT"
+scalacOptions ++= Seq("-deprecation")//, "-feature")
+
+resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
+
+libraryDependencies += "me.lessis" %% "lesst" % "0.1.0"
 
 seq(scriptedSettings:_*)
 
@@ -31,18 +34,15 @@ description := "Sbt plugin for compiling Less CSS sources"
 homepage :=
   Some(url("https://github.com/softprops/less-sbt"))
 
-//publishTo := Some(Resolver.url("sbt-plugin-releases", url(
-//  "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"
-//))(Resolver.ivyStylePatterns))
-
 publishTo := Some(Classpaths.sbtPluginReleases) 
 
 publishMavenStyle := false
 
 publishArtifact in Test := false
 
-licenses <<= version(v=>Seq("MIT" -> url(
-  "https://github.com/softprops/less-sbt/blob/%s/LICENSE" format v)))
+licenses <<= (name,version)(
+  (name, ver) => Seq("MIT" -> url(
+    "https://github.com/softprops/%s/blob/%s/LICENSE" format(name, ver))))
 
 pomExtra := (
   <scm>
