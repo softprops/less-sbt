@@ -33,15 +33,6 @@ In your plugin definition, add
 ```scala    
 addSbtPlugin("me.lessis" % "less-sbt" % "0.2.0")
 ```
-   
-For sbt 0.13 users add the following resolver to your plugin configuration
-
-```scala
-resolvers += Resolver.url(
-  "bintray-sbt-plugin-releases",
-      url("http://dl.bintray.com/content/sbt/sbt-plugin-releases"))(
-              Resolver.ivyStylePatterns)
-```
     
 Then in your build definition, add
 
