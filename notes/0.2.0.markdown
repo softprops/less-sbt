@@ -1,8 +1,12 @@
 ## doing less
 
-* This plugin now uses the standalone [less css](http://lesscss.org/) compiler, [less](https://github.com/softprops/lesst#readme) to do the actual compiling.
+* This plugin now uses the standalone [less css](http://lesscss.org/) compiler, [lesst](https://github.com/softprops/lesst#readme) to do the actual compiling.
 
 ## changes
 
 * This plugin is now compatible with the lastest release version of less css [1.4.2](https://github.com/less/less.js/releases/tag/v1.4.2)
-* A `lessCompiler` task was introduced which returns an instance of the [compiler](https://github.com/softprops/lesst/blob/0.1.0/src/main/scala/compile.scala#L14-L17) to run. By default this is the 1.4.2 and, in theory, you could provide your own custom less compiler.
+* A `lessCompiler` task was introduced which returns an instance of the [compiler](https://github.com/softprops/lesst/blob/0.1.0/src/main/scala/compile.scala#L14-L17) to run. By default this is the less 1.4.2 compiler but, in theory, you could provide your own custom less compiler.
+
+## issues
+
+If you find new issues, please [let me know](https://github.com/softprops/less-sbt/issues/new?title=something%20more%20descriptive%20than%20it%20doesnt%20work)
