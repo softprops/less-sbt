@@ -24,8 +24,7 @@ For sbt 0.12 users
     config:source-directory(for less) # where less files will be resolved from
     config:resource-managed(for less) # where compiled css will be copied to
     
-For sbt 0.13 users, the syntax slightly changed. setting keys are now camel cased from the REPL and are accessed when prefiexed with `less::`.
-
+For sbt 0.13 users, the syntax for accessing settings keys in the REPL slightly changed. setting keys are now camel cased from the REPL and less-scoped keys can be accessed when prefiexed with `less::`.
 
 ## install it
 
