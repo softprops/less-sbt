@@ -17,7 +17,7 @@ object NonFatal {
   def unapply(t: Throwable): Option[Throwable] = if (apply(t)) Some(t) else None
 }
 
-/** An sbt plugin interface for lesscss.org 1.3.0 compiler */
+/** sbt frontend for lesst less css compiler */
 object Plugin extends sbt.Plugin {
 
   object LessKeys {
@@ -59,14 +59,14 @@ object Plugin extends sbt.Plugin {
       .fold({
         case ce: lesst.CompilationError => throw ce
         case NonFatal(e) => throw new RuntimeException(
-          "unexpected compilation error: %s" format e.getMessage, e)
+          "unexpected less css compilation error: %s" format e.getMessage, e)
       }, {
         case lesst.StyleSheet(css, imports) =>
           IO.write(lessFile.cssFile, css)
           log.debug("Wrote css to file %s" format lessFile.cssFile)
           IO.write(lessFile.importsFile, imports mkString Files.ImportsDelimiter)
           log.debug("Wrote imports to file %s" format lessFile.importsFile)
-        lessFile.cssFile
+          lessFile.cssFile
       })
     } catch {
       case NonFatal(e) => throw new RuntimeException(
@@ -74,7 +74,7 @@ object Plugin extends sbt.Plugin {
         lessFile, e.getMessage), e)
     }
 
-  private def allCompilerTask =
+  private def allCompileTask =
     (streams, sourceDirectory in lesskey,
      resourceManaged in lesskey, target in lesskey,
      filter in lesskey, excludeFilter in lesskey,
@@ -144,7 +144,7 @@ object Plugin extends sbt.Plugin {
     unmanagedSources in lesskey <<= lessSourcesTask,
     clean in lesskey <<= lessCleanTask,
     lesskey <<= lessCompileTask,
-    all in lesskey <<= allCompilerTask,
+    all in lesskey <<= allCompileTask,
     lessCompiler in lesskey <<= lessCompilerTask
   )
 }

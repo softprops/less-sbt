@@ -9,10 +9,9 @@ name := "less-sbt"
 //scalaVersion in Global := "2.10.2"
 
 version <<= sbtVersion(v =>
-  if (v.startsWith("0.11") || v.startsWith("0.12") || v.startsWith("0.13")) "0.2.0-SNAPSHOT"
+  if (v.startsWith("0.11") || v.startsWith("0.12") || v.startsWith("0.13")) "0.2.0"
   else error("unsupported sbt version %s" format v)
 )
-
 
 scalacOptions ++= Seq("-deprecation")//, "-feature")
 
@@ -31,8 +30,8 @@ description := "Sbt plugin for compiling Less CSS sources"
 // ls bug https://github.com/softprops/ls/issues/54
 //(externalResolvers in LsKeys.lsync) <<= (publishTo) map { _.get :: Nil }
 
-homepage :=
-  Some(url("https://github.com/softprops/less-sbt"))
+homepage <<= (name)( name =>
+  Some(url("https://github.com/softprops/%s".format(name))))
 
 publishTo := Some(Classpaths.sbtPluginReleases) 
 
