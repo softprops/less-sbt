@@ -16,7 +16,7 @@ private [less] object NonFatal {
   def unapply(t: Throwable): Option[Throwable] = if (apply(t)) Some(t) else None
 }
 
-/** Sbt frontend for LESS CSS compiler */
+/** Sbt frontend for the less CSS compiler */
 object Plugin extends sbt.Plugin {
 
   object LessKeys {
