@@ -6,8 +6,8 @@ import sbt.Def.{ Initialize, ScopedKey }
 import java.io.File
 import java.nio.charset.Charset
 
-// 2.10 shim
-object NonFatal {
+/** 2.10 shim for classifying Non fatal exceptions in exception handling */
+private [less] object NonFatal {
   def apply(t: Throwable): Boolean = t match {
     case _: StackOverflowError => true
     case _: VirtualMachineError | _: ThreadDeath | _: InterruptedException | _: LinkageError  => false
@@ -16,7 +16,7 @@ object NonFatal {
   def unapply(t: Throwable): Option[Throwable] = if (apply(t)) Some(t) else None
 }
 
-/** sbt frontend for lesst less css compiler */
+/** Sbt frontend for LESS CSS compiler */
 object Plugin extends sbt.Plugin {
 
   object LessKeys {
@@ -44,33 +44,33 @@ object Plugin extends sbt.Plugin {
         IO.delete(target)
     }
 
-  private def readFile(file: LessSourceFile, charset: Charset) =
-    io.Source.fromFile(file.lessFile)(io.Codec(charset)).mkString
+  private def readFile(mapping: LessSourceMapping, charset: Charset) =
+    io.Source.fromFile(mapping.lessFile)(io.Codec(charset)).mkString
 
   private def compileSource(
     compiler: lesst.Compile,
     charset: Charset,
-    log: Logger)(lessFile: LessSourceFile) =
+    log: Logger)(mapping: LessSourceMapping) =
     try {
-      log.debug("Compiling %s" format lessFile)
+      log.debug("Compiling %s" format mapping.lessFile)
       compiler(
-        lessFile.path, readFile(lessFile, charset))
+        mapping.path, readFile(mapping, charset))
       .fold({
         case ce: lesst.CompilationError => throw ce
         case NonFatal(e) => throw new RuntimeException(
           "unexpected less css compilation error: %s" format e.getMessage, e)
       }, {
         case lesst.StyleSheet(css, imports) =>
-          IO.write(lessFile.cssFile, css)
-          log.debug("Wrote css to file %s" format lessFile.cssFile)
-          IO.write(lessFile.importsFile, imports mkString Files.ImportsDelimiter)
-          log.debug("Wrote imports to file %s" format lessFile.importsFile)
-          lessFile.cssFile
+          IO.write(mapping.cssFile, css)
+          log.debug("Wrote css to file %s" format mapping.cssFile)
+          IO.write(mapping.importsFile, imports mkString Files.ImportsDelimiter)
+          log.debug("Wrote imports to file %s" format mapping.importsFile)
+          mapping.cssFile
       })
     } catch {
       case NonFatal(e) => throw new RuntimeException(
         "Error occured while compiling %s:\n%s" format(
-        lessFile, e.getMessage), e)
+        mapping, e.getMessage), e)
     }
 
   private def allCompileTask =
@@ -85,12 +85,12 @@ object Plugin extends sbt.Plugin {
      filter in lesskey, excludeFilter in lesskey,
      charset in lesskey, lessCompiler in lesskey) map compileIf(_.changed)
 
-  private def compileIf(cond: LessSourceFile => Boolean)
+  private def compileIf(cond: LessSourceMapping => Boolean)
     (out: std.TaskStreams[ScopedKey[_]], sourcesDir: File, cssDir: File, targetDir: File,
      incl: FileFilter, excl: FileFilter, charset: Charset, compiler: lesst.Compile) =
        (for {
          file <- sourcesDir.descendantsExcept(incl, excl).get
-         lessSrc = new LessSourceFile(file, sourcesDir, targetDir, cssDir)
+         lessSrc = new LessSourceMapping(file, sourcesDir, targetDir, cssDir)
          if cond(lessSrc)
        } yield lessSrc) match {
          case Nil =>

@@ -3,12 +3,13 @@ package less
 import java.io.File
 import sbt.IO
 
-object Files {
+private [less] object Files {
   val ImportsDelimiter = "\n"
 }
 
-class LessSourceFile(val lessFile: File, sourcesDir: File,
-                     targetDir: File, cssDir: File) {
+class LessSourceMapping(
+  val lessFile: File, sourcesDir: File,
+  targetDir: File, cssDir: File) {
   import sbt.Path._ // File -> RichFile
   val relPath = IO.relativize(sourcesDir, lessFile).get
   lazy val cssFile = new File(cssDir, relPath.replaceFirst("\\.less$",".css"))
