@@ -1,0 +1,29 @@
+{
+  "organization" : "me.lessis",
+  "name" : "less-sbt",
+  "version" : "0.2.1",
+  "description" : "Sbt plugin for compiling Less CSS sources",
+  "site" : "https://github.com/softprops/less-sbt",
+  "tags" : [ "sbt", "less" ],
+  "docs" : "",
+  "resolvers" : [ "https://oss.sonatype.org/content/repositories/releases" ],
+  "dependencies" : [ {
+    "organization" : "me.lessis",
+    "name" : "lesst",
+    "version" : "0.1.1"
+  }, {
+    "organization" : "org.scala-sbt",
+    "name" : "scripted-sbt",
+    "version" : "0.13.0-RC5"
+  }, {
+    "organization" : "org.scala-sbt",
+    "name" : "sbt-launch",
+    "version" : "0.13.0-RC5"
+  } ],
+  "scalas" : [ "2.10.2" ],
+  "licenses" : [ {
+    "name" : "MIT",
+    "url" : "https://github.com/softprops/less-sbt/blob/0.2.1/LICENSE"
+  } ],
+  "sbt" : true
+}
