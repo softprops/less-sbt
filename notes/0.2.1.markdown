@@ -1,0 +1,3 @@
+## Dependency updates
+
+* Updated to [lesst](https://github.com/softprops/lesst#readme) 0.1.1 for @import fixes to support less CSS builds using [twitter bootstrap](http://getbootstrap.com/).
