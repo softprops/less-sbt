@@ -1,4 +1,3 @@
-
 # less sbt
 
 type [less](http://lesscss.org/) css in your sbt projects
