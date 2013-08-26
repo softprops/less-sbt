@@ -29,7 +29,9 @@ For sbt 0.13 users, the syntax for accessing settings keys in the REPL slightly 
 
 In your plugin definition, add
 
-```scala    
+```scala
+resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
+
 addSbtPlugin("me.lessis" % "less-sbt" % "0.2.1")
 ```
     
