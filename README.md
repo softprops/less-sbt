@@ -1,4 +1,3 @@
-
 # less sbt
 
 type [less](http://lesscss.org/) css in your sbt projects
@@ -31,7 +30,7 @@ For sbt 0.13 users, the syntax for accessing settings keys in the REPL slightly 
 In your plugin definition, add
 
 ```scala    
-addSbtPlugin("me.lessis" % "less-sbt" % "0.2.0")
+addSbtPlugin("me.lessis" % "less-sbt" % "0.2.1")
 ```
     
 Then in your build definition, add
