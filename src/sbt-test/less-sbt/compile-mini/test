@@ -1,0 +1,4 @@
+# should generate minified css
+> less
+$ exists target/scala-2.10/resource_managed/main/css/foo.css
+> contents target/scala-2.10/resource_managed/main/css/foo.css fixtures/foo.css
