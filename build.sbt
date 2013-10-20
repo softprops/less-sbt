@@ -21,6 +21,12 @@ libraryDependencies += "me.lessis" %% "lesst" % "0.1.2-SNAPSHOT"
 
 seq(scriptedSettings:_*)
 
+//scriptedLaunchOpts := { scriptedLaunchOpts.value ++
+//  Seq("-Xmx1024M", "-XX:MaxPermSize=256M", "-Dplugin.version=" + version.value)
+//}
+
+scriptedBufferLog := false
+
 seq(lsSettings:_*)
 
 (LsKeys.tags in LsKeys.lsync) := Seq("sbt", "less")
