@@ -1,1 +1,1 @@
-addSbtPlugin("me.lessis" % "less-sbt" % "0.2.2-SNAPSHOT")
+addSbtPlugin("me.lessis" % "less-sbt" % System.getProperty("plugin.version"))

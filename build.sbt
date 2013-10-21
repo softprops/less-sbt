@@ -21,9 +21,13 @@ libraryDependencies += "me.lessis" %% "lesst" % "0.1.2-SNAPSHOT"
 
 seq(scriptedSettings:_*)
 
-//scriptedLaunchOpts := { scriptedLaunchOpts.value ++
-//  Seq("-Xmx1024M", "-XX:MaxPermSize=256M", "-Dplugin.version=" + version.value)
-//}
+// thank eugene!
+scriptedLaunchOpts <<= (scriptedLaunchOpts, version).apply {
+  (scriptedOpts, vers) =>
+    scriptedOpts ++ Seq(
+      "-Xmx1024M", "-XX:MaxPermSize=256M", "-Dplugin.version=" + vers
+    )
+}
 
 scriptedBufferLog := false
 
