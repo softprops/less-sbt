@@ -32,7 +32,7 @@ In your plugin definition, add
 ```scala
 resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 
-addSbtPlugin("me.lessis" % "less-sbt" % "0.2.1")
+addSbtPlugin("me.lessis" % "less-sbt" % "0.2.2")
 ```
     
 Then in your build definition, add
