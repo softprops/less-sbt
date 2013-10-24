@@ -30,6 +30,11 @@ For sbt 0.13 users, the syntax for accessing settings keys in the REPL slightly 
 In your plugin definition, add
 
 ```scala
+resolvers += Resolver.url(
+  "bintray-sbt-plugin-releases",
+    url("http://dl.bintray.com/content/sbt/sbt-plugin-releases"))(
+      Resolver.ivyStylePatterns)
+      
 resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 
 addSbtPlugin("me.lessis" % "less-sbt" % "0.2.2")
